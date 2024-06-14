@@ -1,0 +1,14 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel GenerateNoise
+#include "Assets/Shader Headers/PerlinNoise.cginc"
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+Texture2D<float> Input;
+float maxHeight;
+
+[numthreads(8,8,8)]
+void GenerateNoise (int3 id : SV_DispatchThreadID)
+{
+    float height = Input[id.xy] * maxHeight;
+    
+}

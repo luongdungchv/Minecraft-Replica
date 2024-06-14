@@ -1,0 +1,41 @@
+#pragma kernel Cull
+
+struct InstanceData{
+    float4x4 trs;
+    int id;
+};
+struct FaceData{
+    int instanceIndex;
+    int face;
+};
+
+RWStructuredBuffer<InstanceData> instanceBuffer;
+int2 dimension;
+AppendStructuredBuffer<FaceData> faceData;
+static int3 directions[6] = {
+    int3(0, 0, -1),
+    int3(0, 0, 1),
+    int3(1, 0, 0),
+    int3(-1, 0, 0),
+    int3(0, 1, 0),
+    int3(0, -1, 0),
+};
+
+
+
+[numthreads(8,8,8)]
+void Cull (int3 id : SV_DispatchThreadID)
+{
+    int index = id.x * dimension.x + id.y * dimension.y + id.z;
+    InstanceData data = instanceBuffer[index];
+    for(int i = 0; i < 6; i++){
+        int3 dir = directions[i];
+        int3 adj = id + dir;
+        if(adj.x > dimension.x || adj.y > dimension.y || adj.x < 0 || adj.y < 0 || adj.z < 0) continue;
+        FaceData data;
+        data.instanceIndex = index;
+        data.face = i;
+        faceData.Append(data);
+    }
+    
+}

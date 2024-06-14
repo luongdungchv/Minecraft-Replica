@@ -1,0 +1,17 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel GenerateNoise
+#include "Assets/Shader Headers/PerlinNoise.cginc"
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float> Result;
+
+float noiseScale;
+float2 offset;
+
+[numthreads(8,8,1)]
+void GenerateNoise (int3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+    float perlinVal = perlinNoise((id.xy + offset) / noiseScale);
+    Result[id.xy] = perlinVal;
+}
