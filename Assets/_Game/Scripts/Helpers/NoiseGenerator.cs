@@ -10,8 +10,16 @@ public class NoiseGenerator : MonoBehaviour
     [SerializeField] private Vector2 testOffset;
     public RenderTexture NoiseTexture => this.targetTexture;
 
+    public int Width => this.NoiseTexture.width;
+    public int Height => this.NoiseTexture.height;
+    public RenderTexture TargetTexture => this.targetTexture;
+
     private void Start() {
-        this.GenerateNoise(this.testOffset);
+        //this.GenerateNoise(this.testOffset);
+    }
+
+    private void Update(){
+        //this.GenerateNoise(this.testOffset);
     }
 
     public void GenerateNoise(Vector2 offset){
@@ -27,6 +35,9 @@ public class NoiseGenerator : MonoBehaviour
         noiseGeneratorCS.Dispatch(kernelIndex, Mathf.CeilToInt(textureWidth / 8), Mathf.CeilToInt(textureHeight / 8), 1);
     }
 
+    private void OnDestroy() {
+        //this.
+    }
 
 
     // private void Update(){
