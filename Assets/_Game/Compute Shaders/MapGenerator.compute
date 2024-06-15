@@ -6,14 +6,18 @@
 
 struct InstanceData{
     float4x4 trs;
+    int available;
 };
 
 float2 offset;
 float size;
 
 Texture2D<float> Input;
-AppendStructuredBuffer<InstanceData> instancesData;
+RWStructuredBuffer<InstanceData> instancesData;
+AppendStructuredBuffer<InstanceData> testBuffer;
+
 float maxHeight;
+uint width, height;
 
 float4x4 QuatToMatrix(float4 q)
 {
@@ -36,20 +40,43 @@ float4x4 MakeTRSMatrix(float3 pos, float4 rotQuat, float3 scale)
 }
 
 [numthreads(8,8,8)]
-void GenerateMap (int3 id : SV_DispatchThreadID)
+void GenerateMap (uint3 id : SV_DispatchThreadID)
 {
-    float height = Input[id.xy];
+    float height = Input[id.xy] * 20;
     float2 center = float2(size / 2, size / 2);
-    float2 dir = id.xy - center;
+    float2 dir = float2(id.xy) - center;
 
-    float2 a = offset + dir;
-
-    float3 worldPos = float3(a.x, id.z* height, a.y);
-    float4 rotation = float4(0,0,0,1);
-    float3 scale = float3(1,1,1);
-
-    float4x4 trs = MakeTRSMatrix(worldPos, rotation, scale);
     InstanceData data = (InstanceData)0;
-    data.trs = trs;
-    instancesData.Append(data);
+    uint index = id.x * 20 * 256 + id.y * 20 + id.z;
+    if(id.z <= height){
+        float2 a = offset + dir;
+
+        float3 worldPos = float3(a.x, id.z, a.y);
+        float4 rotation = float4(0,0,0,1);
+        float3 scale = float3(1,1,1);
+
+        float4x4 trs = MakeTRSMatrix(worldPos, rotation, scale);
+        data.trs = trs;
+        data.available = 1;
+
+        instancesData[index] = data;
+    }
+    else{
+        data.available = 0;
+        instancesData[index] = data;
+    }
+
+    // float2 a = offset + dir;
+
+    // float3 worldPos = float3(a.x, id.z, a.y);
+    // float4 rotation = float4(0,0,0,1);
+    // float3 scale = float3(1,1,1);
+
+    // float4x4 trs = MakeTRSMatrix(worldPos, rotation, scale);
+    // data.trs = trs;
+    // data.available = 1;
+
+    // instancesData[id.x * 20 * 256 + id.y * 20 + id.z] = data;
+    //testBuffer.Append(data);
+    
 }

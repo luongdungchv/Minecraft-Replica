@@ -1,0 +1,61 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+struct InstanceData{
+    float4x4 trs;
+    int available;
+};
+struct FaceData{
+    uint instanceIndex;
+    uint vertexIndex;
+};
+RWStructuredBuffer<InstanceData> Input;
+AppendStructuredBuffer<FaceData> Result;
+AppendStructuredBuffer<InstanceData> testResult;
+
+uint maxHeight, width, height;
+
+int3 dirs[6];
+
+[numthreads(8,8,8)]
+void CSMain (int3 id : SV_DispatchThreadID)
+{
+    uint inputIndex = id.x * 20 * 256 + id.y * 20 + id.z;
+    InstanceData input = Input[inputIndex];
+    if(input.available == 0) return;
+    for(uint i = 0; i < 6; i++){
+        int3 adjID = id + dirs[i];
+        if(adjID.x < 0 || adjID.y < 0 || adjID.z < 0 || adjID.x >= 256 || adjID.y >= 256){
+            FaceData face = (FaceData)0;
+            face.instanceIndex = inputIndex;
+            face.vertexIndex = i;
+            Result.Append(face);
+            continue;
+        }
+        InstanceData ins = Input[adjID.x * 20 * 256 + adjID.y * 20 + adjID.z];
+        if(!ins.available){
+            FaceData face = (FaceData)0;
+            face.instanceIndex = inputIndex;
+            face.vertexIndex = i;
+            Result.Append(face);
+        }
+        
+    }
+    // int3 adjID = id + dirs[1];
+    // InstanceData ins = Input[adjID.x * 20 * 256 + adjID.y * 20 + adjID.z];
+    // if(!ins.available){
+    //     FaceData face = (FaceData)0;
+    //     face.instanceIndex = inputIndex;
+    //     face.vertexIndex = 4;
+    //     Result.Append(face);
+    // }
+    // if(adjID.x < 0 || adjID.y < 0 || adjID.z < 0 || adjID.x >= 256 || adjID.y >= 256){
+    //     FaceData face = (FaceData)0;
+    //     face.instanceIndex = inputIndex;
+    //     face.vertexIndex = 2;
+    //     Result.Append(face);
+    // }
+    //testResult.Append(input);
+}
