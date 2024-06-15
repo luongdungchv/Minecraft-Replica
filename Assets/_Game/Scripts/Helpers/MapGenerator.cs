@@ -7,12 +7,12 @@ public class MapGenerator : MonoBehaviour
     [SerializeField] private NoiseGenerator noiseGenerator;
     [SerializeField] private int maxHeight;
     [SerializeField] private Mesh blockMesh;
-    [SerializeField] private ComputeShader mapGenShader, faceCullShader;
+    [SerializeField] private ComputeShader mapGenShader, faceCullShader, frustumCullShader, frustumArgsFillerShader;
     [SerializeField] private Material drawMaterial, testMat;
     [SerializeField] private InstanceData[] datas;
     [SerializeField] private Vector3[] logsVerts;
     [SerializeField] private int[] logsTris;
-    private ComputeBuffer vertexBuffer, instanceBuffer, argsBuffer, faceBuffer, testBuffer;
+    private ComputeBuffer vertexBuffer, instanceBuffer, drawArgsBuffer, frustumArgsBuffer, faceBuffer, testBuffer, frustumBuffer;
     private ComputeBuffer indexBuffer;
 
     private Bounds bounds;
@@ -30,9 +30,10 @@ public class MapGenerator : MonoBehaviour
     {
         noiseGenerator.GenerateNoise(Vector3.zero);
         this.GenerateBaseWorldAround(Vector3.zero);
-        ComputeBuffer.CopyCount(faceBuffer, argsBuffer, 4);
+        
         this.DrawBlocks(Vector3.zero);
         this.faceBuffer.SetCounterValue(0);
+        this.frustumBuffer.SetCounterValue(0);
 
         // noiseGenerator.GenerateNoise(Vector3.zero);
         // this.GenerateBaseWorldAround(Vector3.zero);
@@ -46,19 +47,29 @@ public class MapGenerator : MonoBehaviour
     {
         noiseGenerator.GenerateNoise(Vector3.zero);
         this.GenerateBaseWorldAround(Vector3.zero);
-        ComputeBuffer.CopyCount(faceBuffer, argsBuffer, 4);
+        ComputeBuffer.CopyCount(faceBuffer, drawArgsBuffer, 4);
         //this.DrawBlocks(Vector3.zero);
         InstanceData[] datas = new InstanceData[noiseGenerator.Width * noiseGenerator.Height * maxHeight];
         uint[] args = new uint[5];
-        this.argsBuffer.GetData(args);
+        this.drawArgsBuffer.GetData(args);
         FaceData[] faces = new FaceData[240000];
         faceBuffer.GetData(faces);
         // Debug.Log(datas[test].trs);
         // Debug.Log(datas[test].available);
         //Debug.Log
-        argsBuffer.GetData(args);
+        drawArgsBuffer.GetData(args);
         Debug.Log(args[1]);
+        Debug.Log(Camera.main.projectionMatrix);
         this.testBuffer.SetCounterValue(0);
+    }
+
+    [Sirenix.OdinInspector.Button]
+    private void Test2(){
+        noiseGenerator.GenerateNoise(Vector3.zero);
+        this.GenerateBaseWorldAround(Vector3.zero);
+        int[] args = new int[3];
+        this.frustumArgsBuffer.GetData(args);
+        Debug.Log(args[0]);
     }
 
     // private void PopulateVertexBuffer()
@@ -143,9 +154,15 @@ public class MapGenerator : MonoBehaviour
             new Vector3(1, 0, 0)
         });
 
+        this.frustumBuffer = new ComputeBuffer(noiseGenerator.Width * noiseGenerator.Height * maxHeight * 6, FaceData.Size, ComputeBufferType.Append);
+        frustumBuffer.SetCounterValue(0);
+        frustumCullShader.SetBuffer(0, "instanceBuffer", this.instanceBuffer);
+        frustumCullShader.SetBuffer(0, "faceBuffer", this.faceBuffer);
+        frustumCullShader.SetBuffer(0, "result", this.frustumBuffer);
+
         this.drawMaterial.SetBuffer("instanceBuffer", instanceBuffer);
         this.drawMaterial.SetBuffer("positionBuffer", this.vertexBuffer);
-        this.drawMaterial.SetBuffer("faceBuffer", this.faceBuffer);
+        this.drawMaterial.SetBuffer("faceBuffer", this.frustumBuffer);
         this.drawMaterial.SetBuffer("indexBuffer", this.indexBuffer);
 
         this.testMat.SetBuffer("instanceBuffer", this.testBuffer);
@@ -154,18 +171,26 @@ public class MapGenerator : MonoBehaviour
     {
         mapGenShader.SetVector("offset", (Vector2)playerPos);
         mapGenShader.Dispatch(0, Mathf.CeilToInt(noiseGenerator.Width / 8), Mathf.CeilToInt(noiseGenerator.Height / 8), Mathf.CeilToInt(maxHeight / 8));
+        faceCullShader.SetVector("camPos", Camera.main.transform.position);
         faceCullShader.Dispatch(0, Mathf.CeilToInt(noiseGenerator.Width / 8), Mathf.CeilToInt(noiseGenerator.Height / 8), Mathf.CeilToInt(maxHeight / 8));
+
+        ComputeBuffer.CopyCount(faceBuffer, drawArgsBuffer, 4);
+        ComputeBuffer.CopyCount(faceBuffer, frustumArgsBuffer, 0);
+        frustumArgsFillerShader.Dispatch(0,1,1,1);
+
+        var p = Camera.main.projectionMatrix;
+        p.SetRow(0, new Vector4(0.84839f, 0, 0, 0));
+        p.SetRow(1, new Vector4(0f, 1.51084f, 0, 0));
+        var v = Camera.main.worldToCameraMatrix;
+        var VP = p * v;
+        frustumCullShader.SetMatrix("vp", VP);
+        frustumCullShader.SetVector("camPos", Camera.main.transform.position);
+        frustumCullShader.DispatchIndirect(0, this.frustumArgsBuffer);
     }
 
     private void InitArgsBuffer()
     {
-        uint[] args = {
-            6,
-            0,
-            0,
-            0,
-            0
-        };
+        uint[] args = {6,0,0,0,0};
         // uint[] args = {
         //     this.blockMesh.GetIndexCount(0),
         //     (uint)(noiseGenerator.Width * noiseGenerator.Height * maxHeight),
@@ -173,15 +198,22 @@ public class MapGenerator : MonoBehaviour
         //     this.blockMesh.GetBaseVertex(0),
         //     0
         // };
-        this.argsBuffer = new ComputeBuffer(5, sizeof(uint), ComputeBufferType.IndirectArguments);
-        this.argsBuffer.SetData(args);
+        this.drawArgsBuffer = new ComputeBuffer(5, sizeof(uint), ComputeBufferType.IndirectArguments);
+        this.drawArgsBuffer.SetData(args);
+
+        args = new uint[]{
+            1,1,1
+        };
+        this.frustumArgsBuffer = new ComputeBuffer(3, sizeof(uint), ComputeBufferType.IndirectArguments);
+        this.frustumArgsBuffer.SetData(args);
+        this.frustumArgsFillerShader.SetBuffer(0, "args", this.frustumArgsBuffer);
     }
 
     private void DrawBlocks(Vector3 center)
     {
         this.bounds.center = center;
         //Graphics.DrawMeshInstancedIndirect(this.blockMesh, 0, this.testMat, this.bounds, this.argsBuffer);
-        Graphics.DrawProceduralIndirect(this.drawMaterial, this.bounds, MeshTopology.Triangles, this.argsBuffer);
+        Graphics.DrawProceduralIndirect(this.drawMaterial, this.bounds, MeshTopology.Triangles, this.drawArgsBuffer);
     }
 
     private void InitializeTests()
@@ -212,12 +244,14 @@ public class MapGenerator : MonoBehaviour
 
     private void OnDestroy()
     {
-        this.argsBuffer.Dispose();
+        this.drawArgsBuffer.Dispose();
         this.instanceBuffer.Dispose();
         this.vertexBuffer.Dispose();
         this.faceBuffer.Dispose();
         this.indexBuffer.Dispose();
         this.testBuffer.Dispose();
+        this.frustumArgsBuffer.Dispose();
+        this.frustumBuffer.Dispose();
     }
 }
 

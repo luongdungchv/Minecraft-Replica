@@ -1,8 +1,6 @@
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
 
-// Create a RenderTexture with enableRandomWrite flag and set it
-// with cs.SetTexture
 struct InstanceData{
     float4x4 trs;
     int available;
@@ -16,6 +14,7 @@ AppendStructuredBuffer<FaceData> Result;
 AppendStructuredBuffer<InstanceData> testResult;
 
 uint maxHeight, width, height;
+float3 camPos;
 
 int3 dirs[6];
 
@@ -26,7 +25,16 @@ void CSMain (int3 id : SV_DispatchThreadID)
     InstanceData input = Input[inputIndex];
     if(input.available == 0) return;
     for(uint i = 0; i < 6; i++){
+        //float dotProd = dot(dirs[i], )
+        float3 pos = input.trs._m03_m13_m23;
+        float3 dir = dirs[i];
+        float y = dir.y;
+        dir.y = dir.z;
+        dir.z = y;
+        float dotProd = dot(dir, camPos - pos);
+        if(dotProd <= 0) continue;
         int3 adjID = id + dirs[i];
+
         if(adjID.x < 0 || adjID.y < 0 || adjID.z < 0 || adjID.x >= 256 || adjID.y >= 256){
             FaceData face = (FaceData)0;
             face.instanceIndex = inputIndex;

@@ -209,14 +209,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: 0.18471193, y: -0, z: -0, w: 0.98279274}
+  m_LocalPosition: {x: 0, y: 69.4, z: -77.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 410087041}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 21.289, y: 0, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -572,7 +572,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 832575517}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
   m_Name: 
@@ -631,6 +631,9 @@ MonoBehaviour:
   blockMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   mapGenShader: {fileID: 7200000, guid: 420d3fc3a1fd81e47a59cda14e735910, type: 3}
   faceCullShader: {fileID: 7200000, guid: aba990ce6219d564287a74c23e7c1177, type: 3}
+  frustumCullShader: {fileID: 7200000, guid: 3e683f3cd151ed84ea8abb9f660f2322, type: 3}
+  frustumArgsFillerShader: {fileID: 7200000, guid: 5c31f76422caedd448c10a88587b58fb,
+    type: 3}
   drawMaterial: {fileID: 2100000, guid: e17f517a698278843a8dd8bff96acf0b, type: 2}
   testMat: {fileID: 2100000, guid: 5fa8054f977b9814a8e4ea7d38a5ea5f, type: 2}
   datas: []
