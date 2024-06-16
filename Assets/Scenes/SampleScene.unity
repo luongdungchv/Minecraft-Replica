@@ -607,6 +607,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1508305056}
   - component: {fileID: 1508305055}
+  - component: {fileID: 1508305058}
+  - component: {fileID: 1508305057}
+  - component: {fileID: 1508305059}
   m_Layer: 0
   m_Name: Map Gen
   m_TagString: Untagged
@@ -629,11 +632,6 @@ MonoBehaviour:
   noiseGenerator: {fileID: 456862206}
   maxHeight: 20
   blockMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  mapGenShader: {fileID: 7200000, guid: 420d3fc3a1fd81e47a59cda14e735910, type: 3}
-  faceCullShader: {fileID: 7200000, guid: aba990ce6219d564287a74c23e7c1177, type: 3}
-  frustumCullShader: {fileID: 7200000, guid: 3e683f3cd151ed84ea8abb9f660f2322, type: 3}
-  frustumArgsFillerShader: {fileID: 7200000, guid: 5c31f76422caedd448c10a88587b58fb,
-    type: 3}
   drawMaterial: {fileID: 2100000, guid: e17f517a698278843a8dd8bff96acf0b, type: 2}
   testMat: {fileID: 2100000, guid: 5fa8054f977b9814a8e4ea7d38a5ea5f, type: 2}
   datas: []
@@ -654,6 +652,47 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1508305057
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1508305054}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02f60ef1d35f02a4b90b396aa7ed6aee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  faceCullShader: {fileID: 7200000, guid: aba990ce6219d564287a74c23e7c1177, type: 3}
+--- !u!114 &1508305058
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1508305054}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c870974f54ef65841a3d849f775a6b9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mapGenShader: {fileID: 7200000, guid: 420d3fc3a1fd81e47a59cda14e735910, type: 3}
+--- !u!114 &1508305059
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1508305054}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8650b97f0c4b1a4fb4b95f7970b22f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  frustumCullShader: {fileID: 7200000, guid: 3e683f3cd151ed84ea8abb9f660f2322, type: 3}
+  frustumArgsFillerShader: {fileID: 7200000, guid: 5c31f76422caedd448c10a88587b58fb,
+    type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
