@@ -20,6 +20,7 @@ public class MapGenerator : MonoBehaviour
     private BaseBlocksGenerator blocksGenerator;
     private FaceCuller faceCuller;
     private FrustumCuller frustumCuller;
+    private DuplicatesRemover duplicatesRemover;
 
     private ComputeBuffer instanceBuffer => blocksGenerator.InstanceBuffer;
     private ComputeBuffer faceBuffer => faceCuller.FaceBuffer;
@@ -33,6 +34,7 @@ public class MapGenerator : MonoBehaviour
         this.blocksGenerator = GetComponent<BaseBlocksGenerator>();
         this.faceCuller = GetComponent<FaceCuller>();
         this.frustumCuller = GetComponent<FrustumCuller>();
+        this.duplicatesRemover = GetComponent<DuplicatesRemover>();
         
         this.PopulateUVDepthBuffer();
         this.PopulateIndexBuffer();
@@ -58,21 +60,16 @@ public class MapGenerator : MonoBehaviour
     [Sirenix.OdinInspector.Button]
     private void TestDrawCube(int test)
     {
-        noiseGenerator.GenerateNoise(Vector3.zero);
-        this.GenerateBaseWorldAround(Vector3.zero);
-        ComputeBuffer.CopyCount(frustumBuffer, drawArgsBuffer, 4);
-        //this.DrawBlocks(Vector3.zero);
-        InstanceData[] datas = new InstanceData[noiseGenerator.Width * noiseGenerator.Height * maxHeight];
-        uint[] args = new uint[5];
-        this.drawArgsBuffer.GetData(args);
-        FaceData[] faces = new FaceData[240000];
-        faceBuffer.GetData(faces);
-        // Debug.Log(datas[test].trs);
-        // Debug.Log(datas[test].available);
-        //Debug.Log
-        drawArgsBuffer.GetData(args);
-        Debug.Log(args[1]);
-        Debug.Log(Camera.main.projectionMatrix);
+        duplicatesRemover.Perform();
+        int[] temp = new int[1];
+        var tempBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.IndirectArguments);
+        ComputeBuffer.CopyCount(duplicatesRemover.OutputBuffer, tempBuffer, 0);
+        tempBuffer.GetData(temp);
+        var output = new int[temp[0]];
+        Debug.Log(temp[0]);
+        duplicatesRemover.OutputBuffer.GetData(output);
+        foreach(var i in output) Debug.Log(i);
+        tempBuffer.Dispose();
     }
 
     [Sirenix.OdinInspector.Button]
@@ -100,6 +97,7 @@ public class MapGenerator : MonoBehaviour
         blocksGenerator.Initialize(noiseGenerator.Width, noiseGenerator.Height, this.maxHeight, noiseGenerator.TargetTexture);
         faceCuller.Initialize(noiseGenerator.Width, noiseGenerator.Height, this.maxHeight);
         frustumCuller.Initialize(noiseGenerator.Width, noiseGenerator.Height, this.maxHeight);
+        duplicatesRemover.Initialize(noiseGenerator.Width * noiseGenerator.Height * maxHeight);
 
         this.drawMaterial.SetBuffer("uvDepthBuffer", this.uvDepthBuffer);
         this.drawMaterial.SetBuffer("instanceBuffer", instanceBuffer);

@@ -4,16 +4,21 @@
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
 
-StructuredBuffer<int> input;
+struct InstanceData{
+    float4x4 trs;
+    int available;
+};
+
+StructuredBuffer<InstanceData> input;
 RWStructuredBuffer<int> checker;
 AppendStructuredBuffer<int> output;
 
-[numthreads(8,1,1)]
+[numthreads(128,1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    int value = input[id.x];
-    int originalVal;
-    InterlockedAdd(checker[value], value, originalVal);
+    int value = input[id.x].available;
+    int originalVal = 0;
+    InterlockedAdd(checker[value], 1, originalVal);
     if(originalVal == 0){
         output.Append(value);
     }

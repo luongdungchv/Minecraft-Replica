@@ -715,6 +715,7 @@ GameObject:
   - component: {fileID: 1508305058}
   - component: {fileID: 1508305057}
   - component: {fileID: 1508305059}
+  - component: {fileID: 1508305060}
   m_Layer: 0
   m_Name: Map Gen
   m_TagString: Untagged
@@ -850,6 +851,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   frustumCullShader: {fileID: 7200000, guid: 3e683f3cd151ed84ea8abb9f660f2322, type: 3}
   frustumArgsFillerShader: {fileID: 7200000, guid: 5c31f76422caedd448c10a88587b58fb,
+    type: 3}
+--- !u!114 &1508305060
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1508305054}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09eba7e165b7f5343bda9ac7959953b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  duplicateRemoveShader: {fileID: 7200000, guid: 5bcb3c6d6b09c0942913d95afb26fb9d,
     type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
