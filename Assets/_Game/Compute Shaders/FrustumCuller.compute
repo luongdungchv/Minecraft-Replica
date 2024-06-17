@@ -16,20 +16,23 @@ AppendStructuredBuffer<FaceData> result;
 float3 camPos;
 float4x4 vp;
 
+float3 dirs[6];
+
 [numthreads(8,1,1)]
 void CSMain (int3 id : SV_DispatchThreadID)
 {
-    InstanceData input = instanceBuffer[faceBuffer[id.x].instanceIndex];
-    float4 pos = float4(input.trs._m03_m13_m23, 1);
+    // InstanceData input = instanceBuffer[faceBuffer[id.x].instanceIndex];
+    // float4 pos = float4(input.trs._m03_m13_m23 + dirs[faceBuffer[id.x].vertexIndex], 1);
 
-    float4 viewspace = mul(vp, pos);
-    float4 clipspace = viewspace;
-    float x = clipspace.x;
-    float y = clipspace.y;
-    float z = clipspace.z;
-    float w = clipspace.w + 0.3;
-    bool inView = !(x < -w || x > w|| y < -w || y > w || z < -w || z > w);
-    if(inView){
-        result.Append(faceBuffer[id.x]);
-    }
+    // float4 viewspace = mul(vp, pos);
+    // float4 clipspace = viewspace;
+    // float x = clipspace.x;
+    // float y = clipspace.y;
+    // float z = clipspace.z;
+    // float w = clipspace.w + 0.3;
+    // bool inView = !(x < -w || x > w|| y < -w || y > w || z < -w || z > w);
+    // if(inView){
+    //     result.Append(faceBuffer[id.x]);
+    // }
+    result.Append(faceBuffer[id.x]);
 }

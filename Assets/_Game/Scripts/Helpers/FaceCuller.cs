@@ -11,6 +11,12 @@ public class FaceCuller : MonoBehaviour
 
     public ComputeBuffer FaceBuffer => this.faceBuffer;
 
+    private Camera mainCam;
+
+    private void Awake() {
+        mainCam = Camera.main;
+    }
+
     private ComputeBuffer instanceBuffer => GetComponent<BaseBlocksGenerator>().InstanceBuffer;
     public void Initialize(int width, int height, int maxHeight){
         this.width = width;
@@ -37,7 +43,8 @@ public class FaceCuller : MonoBehaviour
     }
 
     public void Cull(Vector3 camPos){
-        faceCullShader.SetVector("camPos", Camera.main.transform.position);
+        faceCullShader.SetVector("camPos", mainCam.transform.position);
+        faceCullShader.SetVector("camForward", mainCam.transform.forward);
         faceCullShader.Dispatch(0, Mathf.CeilToInt(width / 8), Mathf.CeilToInt(height / 8), Mathf.CeilToInt(maxHeight / 8));
     }
 }

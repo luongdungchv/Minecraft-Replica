@@ -11,6 +11,14 @@ public class FrustumCuller : MonoBehaviour
     public ComputeBuffer FrustumBuffer => this.frustumBuffer;
 
     private int width, height, maxHeight;
+    private Matrix4x4 p;
+
+    private void Awake(){
+        p = Camera.main.projectionMatrix;
+        var tanAngle = Mathf.Tan(90 / 2 * Mathf.Deg2Rad);
+        p.SetRow(0, new Vector4(1 / (tanAngle * Camera.main.aspect), 0, 0, 0));
+        p.SetRow(1, new Vector4(0f, 1 / tanAngle, 0, 0));
+    }
 
     public void Initialize(int width, int height, int maxHeight){
         this.width = width;
@@ -28,14 +36,20 @@ public class FrustumCuller : MonoBehaviour
         frustumBuffer.SetCounterValue(0);
         frustumCullShader.SetBuffer(0, "instanceBuffer", this.GetComponent<BaseBlocksGenerator>().InstanceBuffer);
         frustumCullShader.SetBuffer(0, "faceBuffer", this.GetComponent<FaceCuller>().FaceBuffer);
-        frustumCullShader.SetBuffer(0, "result", this.frustumBuffer);       
+        frustumCullShader.SetBuffer(0, "result", this.frustumBuffer); 
+        frustumCullShader.SetVectorArray("dirs", new Vector4[]{
+            new Vector3(0, 0, 1),
+            new Vector3(0, 1, 0),
+            new Vector3(0, 0, -1),
+            new Vector3(0, -1, 0),
+            new Vector3(-1, 0, 0),
+            new Vector3(1, 0, 0)
+        });      
     }
 
     public void Cull()
     {
-        var p = Camera.main.projectionMatrix;
-        p.SetRow(0, new Vector4(0.84839f, 0, 0, 0));
-        p.SetRow(1, new Vector4(0f, 1.51084f, 0, 0));
+        frustumArgsFillerShader.Dispatch(0, 1, 1, 1);     
         var v = Camera.main.worldToCameraMatrix;
         var VP = p * v;
         frustumCullShader.SetMatrix("vp", VP);

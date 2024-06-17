@@ -14,7 +14,7 @@ AppendStructuredBuffer<FaceData> Result;
 AppendStructuredBuffer<InstanceData> testResult;
 
 uint maxHeight, width, height;
-float3 camPos;
+float3 camPos, camForward;
 
 int3 dirs[6];
 
@@ -27,6 +27,7 @@ void CSMain (int3 id : SV_DispatchThreadID)
     for(uint i = 0; i < 6; i++){
         //float dotProd = dot(dirs[i], )
         float3 pos = input.trs._m03_m13_m23;
+        if(dot(pos - camPos, camForward) < 0) continue;
         float3 dir = dirs[i];
         float y = dir.y;
         dir.y = dir.z;

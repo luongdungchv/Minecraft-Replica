@@ -11,9 +11,11 @@ public class MapGenerator : MonoBehaviour
     [SerializeField] private Material drawMaterial, testMat;
     [SerializeField] private InstanceData[] datas;
     [SerializeField] private Vector3[] logsVerts;
+    [SerializeField] private Vector2[] logUVs;
+    [SerializeField] private Texture2D[] testTexList;
     [SerializeField] private int[] logsTris;
     private ComputeBuffer vertexBuffer, drawArgsBuffer;
-    private ComputeBuffer indexBuffer;
+    private ComputeBuffer indexBuffer, uvBuffer, uvDepthBuffer;
 
     private BaseBlocksGenerator blocksGenerator;
     private FaceCuller faceCuller;
@@ -31,17 +33,21 @@ public class MapGenerator : MonoBehaviour
         this.blocksGenerator = GetComponent<BaseBlocksGenerator>();
         this.faceCuller = GetComponent<FaceCuller>();
         this.frustumCuller = GetComponent<FrustumCuller>();
+        
+        this.PopulateUVDepthBuffer();
         this.PopulateIndexBuffer();
         this.PopulateVertexBuffer();
+        this.PopulateUVBuffer();
         this.InitializeMapGeneration();
         this.InitArgsBuffer();
-        this.bounds = new Bounds(Vector3.zero, Vector3.one * 15000);
 
+        this.bounds = new Bounds(Vector3.zero, Vector3.one * 15000);
+        noiseGenerator.GenerateNoise(Vector3.zero);
+        blocksGenerator.Generate(Vector3.zero);
     }
 
     private void Update()
     {
-        noiseGenerator.GenerateNoise(Vector3.zero);
         this.GenerateBaseWorldAround(Vector3.zero);
         
         this.DrawBlocks(Vector3.zero);
@@ -54,7 +60,7 @@ public class MapGenerator : MonoBehaviour
     {
         noiseGenerator.GenerateNoise(Vector3.zero);
         this.GenerateBaseWorldAround(Vector3.zero);
-        ComputeBuffer.CopyCount(faceBuffer, drawArgsBuffer, 4);
+        ComputeBuffer.CopyCount(frustumBuffer, drawArgsBuffer, 4);
         //this.DrawBlocks(Vector3.zero);
         InstanceData[] datas = new InstanceData[noiseGenerator.Width * noiseGenerator.Height * maxHeight];
         uint[] args = new uint[5];
@@ -71,11 +77,14 @@ public class MapGenerator : MonoBehaviour
 
     [Sirenix.OdinInspector.Button]
     private void Test2(){
-        noiseGenerator.GenerateNoise(Vector3.zero);
-        this.GenerateBaseWorldAround(Vector3.zero);
-        int[] args = new int[3];
-        this.frustumArgsBuffer.GetData(args);
-        Debug.Log(args[0]);
+        // this.logUVs = this.blockMesh.uv;
+        // this.logsVerts = this.blockMesh.vertices;
+        // this.logsTris = blockMesh.triangles;
+
+        int[] test = new int[6];
+        //this.uvDepthBuffer = new ComputeBuffer(6, sizeof(int));
+        this.uvDepthBuffer.GetData(test);
+        foreach(var i in test) Debug.Log(i);
     }
 
     private void PopulateVertexBuffer()
@@ -92,19 +101,22 @@ public class MapGenerator : MonoBehaviour
         faceCuller.Initialize(noiseGenerator.Width, noiseGenerator.Height, this.maxHeight);
         frustumCuller.Initialize(noiseGenerator.Width, noiseGenerator.Height, this.maxHeight);
 
+        this.drawMaterial.SetBuffer("uvDepthBuffer", this.uvDepthBuffer);
         this.drawMaterial.SetBuffer("instanceBuffer", instanceBuffer);
         this.drawMaterial.SetBuffer("positionBuffer", this.vertexBuffer);
-        this.drawMaterial.SetBuffer("faceBuffer", this.frustumBuffer);
+        this.drawMaterial.SetBuffer("faceBuffer", this.faceBuffer);
         this.drawMaterial.SetBuffer("indexBuffer", this.indexBuffer);
+        this.drawMaterial.SetBuffer("uvBuffer", this.uvBuffer);
+        this.drawMaterial.SetTexture("_Textures", this.CreateTextureArray());
     }
     private void GenerateBaseWorldAround(Vector3 playerPos)
     {
-        blocksGenerator.Generate(playerPos);
+        //blocksGenerator.Generate(playerPos);
         faceCuller.Cull(playerPos);
 
-        ComputeBuffer.CopyCount(faceBuffer, drawArgsBuffer, 4);
         ComputeBuffer.CopyCount(faceBuffer, frustumArgsBuffer, 0);
-        this.frustumCuller.Cull();
+        //this.frustumCuller.Cull();
+        ComputeBuffer.CopyCount(faceBuffer, drawArgsBuffer, 4);
     }
 
     private void InitArgsBuffer()
@@ -134,6 +146,24 @@ public class MapGenerator : MonoBehaviour
         indexBuffer.SetData(this.blockMesh.triangles);
     }
 
+    private void PopulateUVBuffer(){
+        var uv = this.blockMesh.uv;
+
+        uv[6] = new Vector2(1, 0);
+        uv[7] = new Vector2(0, 0);
+        uv[11] = new Vector2(0, 1);
+        uv[10] = new Vector2(1, 1);
+
+        this.uvBuffer = new ComputeBuffer(24, sizeof(float) * 2);
+        this.uvBuffer.SetData(uv);
+    }
+
+    private void PopulateUVDepthBuffer(){
+        this.uvDepthBuffer = new ComputeBuffer(6, sizeof(int));
+        float[] datas = {0, 1, 0, 2, 0, 0};
+        uvDepthBuffer.SetData(datas);
+    }
+
     private void OnDestroy()
     {
         this.drawArgsBuffer.Dispose();
@@ -143,6 +173,21 @@ public class MapGenerator : MonoBehaviour
         this.indexBuffer.Dispose();
         this.frustumArgsBuffer.Dispose();
         this.frustumBuffer.Dispose();
+        this.uvBuffer.Dispose();
+        this.uvDepthBuffer.Dispose();
+    }
+
+    private Texture2DArray CreateTextureArray()
+    {
+        Texture2DArray texArray = new Texture2DArray(16, 16, 3, testTexList[0].format, false);
+        texArray.filterMode = FilterMode.Point;
+        for (int i = 0; i < 3; i++)
+        {
+            texArray.SetPixels32(testTexList[i].GetPixels32(), i);
+        }
+        texArray.Apply();
+
+        return texArray;
     }
 }
 
