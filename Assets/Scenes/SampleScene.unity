@@ -800,6 +800,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: b26b9b400fc6b47469f0f9093472da5d, type: 2}
   - {fileID: 11400000, guid: 88082ee40e07d2d4bbc610faa6992b4a, type: 2}
   - {fileID: 11400000, guid: a7c78c73770108a45bb1cd7930ee3e22, type: 2}
+  - {fileID: 11400000, guid: c4e35af0306450642b6d27bcec3f33d8, type: 2}
 --- !u!4 &1508305056
 Transform:
   m_ObjectHideFlags: 0

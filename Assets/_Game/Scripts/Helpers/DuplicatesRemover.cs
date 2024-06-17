@@ -13,9 +13,9 @@ public class DuplicatesRemover : MonoBehaviour
     private int inputBufferSize;
 
     public void Initialize(int inputBufferSize){
-        checkerBuffer = new ComputeBuffer(4, sizeof(int));
+        checkerBuffer = new ComputeBuffer(5, sizeof(int));
         checkerBuffer.SetData(new int[]{0,0,0});
-        outputBuffer = new ComputeBuffer(4, sizeof(int), ComputeBufferType.Append);
+        outputBuffer = new ComputeBuffer(5, sizeof(int), ComputeBufferType.Append);
         outputBuffer.SetCounterValue(0);
 
         duplicateRemoveShader.SetBuffer(0, "input", this.GetComponent<BaseBlocksGenerator>().InstanceBuffer);
