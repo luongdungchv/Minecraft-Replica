@@ -56,6 +56,7 @@ Shader "Custom/Block face"
             StructuredBuffer<FaceData> faceBuffer;
             StructuredBuffer<float3> positionBuffer;
             StructuredBuffer<int> indexBuffer;
+            StructuredBuffer<int> uvDepthMap;
             StructuredBuffer<float> uvDepthBuffer;
             StructuredBuffer<float2> uvBuffer;
 
@@ -63,7 +64,10 @@ Shader "Custom/Block face"
             {
                 Varyings output;
                 //output.positionCS = TransformObjectToHClip(attr.positionOS);
-                float4x4 trs = instanceBuffer[faceBuffer[attr.instanceID].instanceIndex].trs;
+                int instID = faceBuffer[attr.instanceID].instanceIndex;
+                float4x4 trs = instanceBuffer[instID].trs;
+                int blockType = instanceBuffer[instID].available;
+
                 int index = indexBuffer[attr.vertexID + faceBuffer[attr.instanceID].vertexIndex * 6];
 
                 float3 pos3 = positionBuffer[index];
@@ -72,10 +76,12 @@ Shader "Custom/Block face"
 
                 output.positionCS = TransformObjectToHClip(positionWS);
 
-                float uvDepth = uvDepthBuffer[faceBuffer[attr.instanceID].vertexIndex];
+                float uvDepth = uvDepthBuffer[(uvDepthMap[blockType - 1]) * 6 + faceBuffer[attr.instanceID].vertexIndex];
+                //float uvDepth = uvDepthBuffer[1];
                 float2 uv = uvBuffer[index];
 
                 output.uv = float3(uv, uvDepth);
+                output.color = (float)blockType / 2;
                 return output;
             }
 

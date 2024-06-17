@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72e3d5ede6ae3664ea2ca6d4db600c1c, type: 3}
+  m_Name: Crafting Table Block
+  m_EditorClassIdentifier: 
+  textures:
+  - {fileID: 2800000, guid: 6f98a0726b7e6ed43af23fb32ae3a3f7, type: 3}
+  - {fileID: 2800000, guid: 6a230d90be8f0354cb350ab1946ae6a9, type: 3}
+  - {fileID: 2800000, guid: b861e6b8f0e678a4d9fb2e8300916917, type: 3}
+  - {fileID: 2800000, guid: e1a56242629c1e7439ba81e79e686ab7, type: 3}
+  uvDepthMap: 000000000100000002000000030000000200000002000000

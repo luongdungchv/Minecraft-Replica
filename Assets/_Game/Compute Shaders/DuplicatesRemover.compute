@@ -17,6 +17,7 @@ AppendStructuredBuffer<int> output;
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
     int value = input[id.x].available;
+    if(value == 0) return;
     int originalVal = 0;
     InterlockedAdd(checker[value], 1, originalVal);
     if(originalVal == 0){
