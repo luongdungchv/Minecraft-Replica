@@ -84,7 +84,7 @@ public class MapGenerator : MonoBehaviour
         // this.logsVerts = this.blockMesh.vertices;
         // this.logsTris = blockMesh.triangles;
 
-        int[] test = new int[6];
+        float[] test = new float[12];
         //this.uvDepthBuffer = new ComputeBuffer(6, sizeof(int));
         this.uvDepthBuffer.GetData(test);
         foreach (var i in test) Debug.Log(i);
@@ -136,6 +136,8 @@ public class MapGenerator : MonoBehaviour
         tempBuffer.GetData(temp);
         var output = new int[temp[0]];
         duplicatesRemover.OutputBuffer.GetData(output);
+        output[0] = 2;
+        output[1] = 1; 
 
         this.drawMaterial.SetTexture("_Textures", this.CreateTextureArray(output));
 
@@ -143,15 +145,16 @@ public class MapGenerator : MonoBehaviour
 
         var map = new int[4];
 
+        var currentCount = 0;
         for(int i = 0; i < output.Length; i++)
         {
             var blockID = output[i] - 1;
             map[blockID] = i;
-            var currentCount = uvDepthList.Count;
             foreach (var uvDepth in blockInfos[blockID].uvDepthMap)
             {
                 uvDepthList.Add(uvDepth + currentCount);
             }
+            currentCount += blockInfos[blockID].textures.Count;
         }
 
         this.uvDepthMapping = new ComputeBuffer(4, sizeof(int), ComputeBufferType.Structured);
