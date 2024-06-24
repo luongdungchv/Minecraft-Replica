@@ -1,0 +1,131 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+#include "Assets/Shader Headers/Math.hlsl"
+#include "../Includes/Common.hlsl"
+
+struct LogData{
+    float3 normal;
+    float3 test1;
+    float3 test2;
+    int result;
+};
+
+RWStructuredBuffer<EntityData> entityBuffer;
+RWStructuredBuffer<LogData> logBuffer;
+StructuredBuffer<InstanceData> instanceBuffer;
+float deltaTime;
+
+float4x4 QuatToMatrix(float4 q)
+{
+    float4x4 rotMat = float4x4
+    (
+    float4(1 - 2 * q.y * q.y - 2 * q.z * q.z, 2 * q.x * q.y + 2 * q.w * q.z, 2 * q.x * q.z - 2 * q.w * q.y, 0),
+    float4(2 * q.x * q.y - 2 * q.w * q.z, 1 - 2 * q.x * q.x - 2 * q.z * q.z, 2 * q.y * q.z + 2 * q.w * q.x, 0),
+    float4(2 * q.x * q.z + 2 * q.w * q.y, 2 * q.y * q.z - 2 * q.w * q.x, 1 - 2 * q.x * q.x - 2 * q.y * q.y, 0),
+    float4(0, 0, 0, 1)
+    );
+    return rotMat;
+}
+
+int3 FindCellContain(float3 position){
+    position += float3(0.5, 0.5, 0.5);
+    int3 result = int3((int)position.x, (int)position.y, (int)position.z);
+    result.x -= (1 - step(0, result.x));
+    result.y -= (1 - step(0, result.y));
+    result.z -= (1 - step(0, result.z));
+    return result;
+}
+
+float4x4 MakeTRSMatrix(float3 pos, float4 rotQuat, float3 scale)
+{
+    float4x4 rotPart = QuatToMatrix(rotQuat);
+    float4x4 trPart = float4x4(float4(scale.x, 0, 0, 0), float4(0, scale.y, 0, 0), float4(0, 0, scale.z, 0), float4(pos, 1));
+    float4x4 result = mul(rotPart, trPart); 
+    return transpose(result);
+}
+
+[numthreads(8,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    EntityData entity = entityBuffer[id.x];
+    float3 position = entity.trs._m03_m13_m23;
+    float3 oldPos = position;
+    position += entity.movement * deltaTime;
+
+    Box entityBox = (Box)0;
+    entityBox.center = position;
+    entityBox.extents = entity.extents;
+    entityBox.orientation = -entity.orientation * 3.141592654 / 180.0;
+    entityBox.orientation = 45 * 3.141592654 / 180.0;
+
+    // Box test1 = (Box)0;
+    // test1.center = float3(0,0,0);
+    // test1.extents = float3(0.5,0.5,0.5);
+    // test1.orientation = 0;
+
+    // Box test2 = (Box)0;
+    // test2.center = float3(1.1,0,0);
+    // test2.extents = float3(0.5,1,0.5);
+    // test2.orientation = 45 * 3.141592654 / 180.0;
+
+    Box block = (Box)0;
+    block.center = float3(-6, 12, -70);
+    block.extents = float3(0.5, 0.5, 0.5);
+    block.orientation = 0;
+    
+    float2 proj = GetProjectionRange(entityBox, float2(0, 1));
+
+    float3 roundExtents = ceil(entity.extents);
+    float3 containingCell = FindCellContain(position);
+
+    float3 normal;
+    bool result = IsCubesOverlap(entityBox, block, normal);
+    
+
+    float3 moveDir = entity.movement;
+    bool collide = false;
+    float3 test = float3(0,0,0);
+    for(int x = containingCell.x - roundExtents.x; x <= containingCell.x + roundExtents.x; x++){
+        for(int y = containingCell.y - roundExtents.y; y <= containingCell.y + roundExtents.y; y++){
+            for(int z = containingCell.z - roundExtents.z; z <= containingCell.z + roundExtents.z; z++){
+                int xIndex = x + 128;
+                int zIndex = z + 128;
+                InstanceData inst = instanceBuffer[xIndex * 20 * 256 + zIndex * 20 + y];
+                if(inst.available == 0) continue;
+
+                Box block = (Box)0;
+                block.center = float3(x, y, z);
+                block.extents = float3(0.5, 0.5, 0.5);
+                block.orientation = 0;
+
+                float3 normal;
+                bool overlap = IsCubesOverlap(entityBox, block, normal);
+                if(normal.x == 0 && normal.y == 0 && normal.z == 0) continue;
+                if(instanceBuffer[(xIndex + (int)normal.x) * 20 * 256 + (zIndex + (int)normal.z) * 20 + y + (int)normal.y].available != 0) continue;
+
+                collide = true;
+                float3 cross1 = cross(moveDir, normal);
+                moveDir = cross(normal, cross1); 
+                if(normal.x != 1){
+                    test = normal;
+                    LogData logData = (LogData)0;
+                    logData.result = (int)collide;
+                    logData.normal = test;
+                    logBuffer[id.x] = logData;
+                }
+            }
+        }
+    }
+
+    
+
+    
+
+    if(!collide) oldPos = position;
+    else oldPos += moveDir * deltaTime;
+
+    entityBuffer[id.x].trs._m03 = oldPos.x;
+    entityBuffer[id.x].trs._m13 = oldPos.y;
+    entityBuffer[id.x].trs._m23 = oldPos.z;
+
+}

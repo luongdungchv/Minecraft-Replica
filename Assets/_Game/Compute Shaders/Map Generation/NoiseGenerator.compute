@@ -13,5 +13,5 @@ void GenerateNoise (int3 id : SV_DispatchThreadID)
 {
     // TODO: insert actual code here!
     float perlinVal = perlinNoise((id.xy + offset) / noiseScale);
-    Result[id.xy] = perlinVal;
+    Result[id.xy] = perlinVal; 
 }

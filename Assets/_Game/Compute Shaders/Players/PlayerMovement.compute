@@ -1,0 +1,16 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+#include "../Includes/Common.hlsl"
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWStructuredBuffer<EntityData> entityBuffer;
+
+float3 movement;
+float orientation;
+
+[numthreads(1,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    entityBuffer[0].movement = movement;
+    entityBuffer[0].orientation = orientation;
+}

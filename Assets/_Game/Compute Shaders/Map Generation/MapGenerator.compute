@@ -1,13 +1,7 @@
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel GenerateMap
 #include "Assets/Shader Headers/PerlinNoise.cginc"
-// Create a RenderTexture with enableRandomWrite flag and set it
-// with cs.SetTexture
-
-struct InstanceData{
-    float4x4 trs;
-    int available;
-}; 
+#include "../Includes/Common.hlsl"
 
 float2 offset;
 float size;
@@ -45,7 +39,7 @@ void GenerateMap (uint3 id : SV_DispatchThreadID)
     float height = Input[id.xy] * 20;
     float2 center = float2(size / 2, size / 2);
     float2 dir = float2(id.xy) - center;
-
+ 
     InstanceData data = (InstanceData)0;
     uint index = id.x * 20 * 256 + id.y * 20 + id.z;
     if(id.z <= height){
@@ -57,7 +51,7 @@ void GenerateMap (uint3 id : SV_DispatchThreadID)
 
         float4x4 trs = MakeTRSMatrix(worldPos, rotation, scale);
         data.trs = trs;
-        data.available = (int)(rand3dTo1d(worldPos) * 4) + 1;
+        data.available = (int)(rand3dTo1d(worldPos) * 2) + 1;
 
         instancesData[index] = data;
     }

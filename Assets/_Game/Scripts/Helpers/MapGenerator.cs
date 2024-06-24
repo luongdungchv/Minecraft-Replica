@@ -5,6 +5,8 @@ using Sirenix.Utilities;
 
 public class MapGenerator : MonoBehaviour
 {
+    public static MapGenerator Instance;
+
     [SerializeField] private NoiseGenerator noiseGenerator;
     [SerializeField] private int maxHeight;
     [SerializeField] private Mesh blockMesh;
@@ -33,6 +35,8 @@ public class MapGenerator : MonoBehaviour
 
     private void Awake()
     {
+        Instance = this;
+
         this.blocksGenerator = GetComponent<BaseBlocksGenerator>();
         this.faceCuller = GetComponent<FaceCuller>();
         this.frustumCuller = GetComponent<FrustumCuller>();
@@ -149,7 +153,6 @@ public class MapGenerator : MonoBehaviour
                 uvDepthList.Add(uvDepth + currentCount);
             }
         }
-        map.ForEach((item, index) => Debug.Log((index, item)));
 
         this.uvDepthMapping = new ComputeBuffer(4, sizeof(int), ComputeBufferType.Structured);
         this.uvDepthMapping.SetData(map);
@@ -225,7 +228,6 @@ public class MapGenerator : MonoBehaviour
         {
             foreach (var tex in blockInfos[blockID - 1].textures)
             {
-                Debug.Log((blockID));
                 texList.Add(tex);
             }
         }

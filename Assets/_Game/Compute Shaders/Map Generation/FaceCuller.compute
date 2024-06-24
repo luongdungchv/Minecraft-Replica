@@ -1,14 +1,7 @@
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
+#include "../Includes/Common.hlsl"
 
-struct InstanceData{
-    float4x4 trs;
-    int available;
-};
-struct FaceData{
-    uint instanceIndex;
-    uint vertexIndex;
-};
 RWStructuredBuffer<InstanceData> Input;
 AppendStructuredBuffer<FaceData> Result;
 AppendStructuredBuffer<InstanceData> testResult;

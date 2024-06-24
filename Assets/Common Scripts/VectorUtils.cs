@@ -55,13 +55,13 @@ public static class VectorUtils
                            y: y == null ? vector2.y : (float)y);
     }
 
-    public static Vector2 ToVectorXZ(this Vector3 vector3)
+    public static Vector2 XZ(this Vector3 vector3)
     {
         return new Vector2(vector3.x, vector3.z);
     }
     
         
-    public static Vector3 ToVectorXZ(this Vector2 vector2)
+    public static Vector3 XZ(this Vector2 vector2)
     {
         return new Vector3(vector2.x, 0, vector2.y);
     }
