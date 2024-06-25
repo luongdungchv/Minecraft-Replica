@@ -32,9 +32,9 @@ float4x4 QuatToMatrix(float4 q)
 int3 FindCellContain(float3 position){
     position += float3(0.5, 0.5, 0.5);
     int3 result = int3((int)position.x, (int)position.y, (int)position.z);
-    result.x -= (1 - step(0, result.x));
-    result.y -= (1 - step(0, result.y));
-    result.z -= (1 - step(0, result.z));
+    result.x -= (1 - step(0, position.x));
+    result.y -= (1 - step(0, position.y));
+    result.z -= (1 - step(0, position.z));
     return result;
 }
 
@@ -71,18 +71,18 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     // test2.extents = float3(0.5,1,0.5);
     // test2.orientation = 45 * 3.141592654 / 180.0;
 
-    // Box block = (Box)0;
-    // block.center = float3(-6, 12, -70);
-    // block.extents = float3(0.5, 0.5, 0.5);
-    // block.orientation = 0;
+    Box block = (Box)0;
+    block.center = float3(-2, 9, 0);
+    block.extents = float3(0.5, 0.5, 0.5);
+    block.orientation = 0;
     
     //float2 proj = GetProjectionRange(entityBox, float2(0, 1));
 
     float3 roundExtents = ceil(entity.extents);
     float3 containingCell = FindCellContain(position);
 
-    // float3 normal;
-    // bool result = IsCubesOverlap(entityBox, block, normal);
+    float3 normal;
+    bool result = IsCubesOverlap(entityBox, block, normal);
     
 
     float3 moveDir = entity.movement;
@@ -112,14 +112,14 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                 float3 normal;
                 bool overlap = IsCubesOverlap(entityBox, block, normal);
                 if(normal.x == 0 && normal.y == 0 && normal.z == 0) continue;
-                if(dot(normal, moveDir) >0) continue;
+                if(dot(normal, moveDir) > 0) continue;
                 if(instanceBuffer[(xIndex + (int)normal.x) * maxHeight * size + (zIndex + (int)normal.z) * maxHeight + y + (int)normal.y].available != 0) continue;
 
-                collide = true;
                 if(normal.x == 0 & normal.y == 1 && normal.z == 0){
                     ground = true;
                     continue;
                 }
+                collide = true;
                 float3 cross1 = cross(moveDir, normal);
                 moveDir = cross(normal, cross1); 
                 // if(normal.x != 1){
@@ -134,8 +134,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     }
 
     LogData logData = (LogData)0;
-    logData.result = (int)ground;
-    logData.normal = 1;
+    logData.result = (int)collide;
+    logData.normal = normal;
     logBuffer[id.x] = logData;
     float gravity = -12;
     if(!ground){

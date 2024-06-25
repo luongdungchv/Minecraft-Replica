@@ -12,12 +12,8 @@ public class MapGenerator : MonoBehaviour
     [SerializeField] private Mesh blockMesh;
     //[SerializeField] private ComputeShader frustumArgsFillerShader;
     [SerializeField] private Material drawMaterial, testMat;
-    [SerializeField] private InstanceData[] datas;
-    [SerializeField] private Vector3[] logsVerts;
-    [SerializeField] private Vector2[] logUVs;
-    [SerializeField] private Texture2D[] testTexList;
-    [SerializeField] private int[] logsTris;
     [SerializeField] private List<BlockInfo> blockInfos;
+    [SerializeField] private int chunkSize;
     private ComputeBuffer vertexBuffer, drawArgsBuffer;
     private ComputeBuffer indexBuffer, uvBuffer, uvDepthBuffer, uvDepthMapping;
 
@@ -98,8 +94,6 @@ public class MapGenerator : MonoBehaviour
         var vertices = this.blockMesh.vertices;
         this.vertexBuffer = new ComputeBuffer(24, sizeof(float) * 3);
         this.vertexBuffer.SetData(vertices);
-        this.logsVerts = vertices;
-        this.logsTris = this.blockMesh.triangles;
     }
     private void InitializeMapGeneration()
     {
@@ -191,7 +185,6 @@ public class MapGenerator : MonoBehaviour
     private void DrawBlocks(Vector3 center)
     {
         this.bounds.center = center;
-        //Graphics.DrawMeshInstancedIndirect(this.blockMesh, 0, this.testMat, this.bounds, this.argsBuffer);
         Graphics.DrawProceduralIndirect(this.drawMaterial, this.bounds, MeshTopology.Triangles, this.drawArgsBuffer);
     }
 
@@ -245,7 +238,7 @@ public class MapGenerator : MonoBehaviour
                 texList.Add(tex);
             }
         }
-        Texture2DArray texArray = new Texture2DArray(16, 16, texList.Count, testTexList[0].format, false)
+        Texture2DArray texArray = new Texture2DArray(16, 16, texList.Count, blockInfos[0].textures[0].format, false)
         {
             filterMode = FilterMode.Point
         };
