@@ -47,6 +47,7 @@ float4x4 MakeTRSMatrix(float3 pos, float4 rotQuat, float3 scale)
 [numthreads(8,1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
+    
     EntityData entity = entityBuffer[id.x];
     float3 position = entity.trs._m03_m13_m23;
     float3 oldPos = position;
@@ -56,7 +57,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     entityBox.center = position;
     entityBox.extents = entity.extents;
     entityBox.orientation = -entity.orientation * 3.141592654 / 180.0;
-    entityBox.orientation = 45 * 3.141592654 / 180.0;
+    entityBox.orientation = -45 * 3.141592654 / 180.0;
 
     // Box test1 = (Box)0;
     // test1.center = float3(0,0,0);
@@ -68,26 +69,34 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     // test2.extents = float3(0.5,1,0.5);
     // test2.orientation = 45 * 3.141592654 / 180.0;
 
-    Box block = (Box)0;
-    block.center = float3(-6, 12, -70);
-    block.extents = float3(0.5, 0.5, 0.5);
-    block.orientation = 0;
+    // Box block = (Box)0;
+    // block.center = float3(-6, 12, -70);
+    // block.extents = float3(0.5, 0.5, 0.5);
+    // block.orientation = 0;
     
-    float2 proj = GetProjectionRange(entityBox, float2(0, 1));
+    //float2 proj = GetProjectionRange(entityBox, float2(0, 1));
 
     float3 roundExtents = ceil(entity.extents);
     float3 containingCell = FindCellContain(position);
 
-    float3 normal;
-    bool result = IsCubesOverlap(entityBox, block, normal);
+    // float3 normal;
+    // bool result = IsCubesOverlap(entityBox, block, normal);
     
 
     float3 moveDir = entity.movement;
     bool collide = false;
+    bool ground = false;
     float3 test = float3(0,0,0);
-    for(int x = containingCell.x - roundExtents.x; x <= containingCell.x + roundExtents.x; x++){
-        for(int y = containingCell.y - roundExtents.y; y <= containingCell.y + roundExtents.y; y++){
-            for(int z = containingCell.z - roundExtents.z; z <= containingCell.z + roundExtents.z; z++){
+    for(int i = -roundExtents.x; i <= roundExtents.x; i++){
+        int x = containingCell.x + i;
+        for(int j = -roundExtents.y; j <= roundExtents.y; j++){
+            int y = containingCell.y + j;
+            if(y < 0) ground = true;
+            for(int k = -roundExtents.z; k <= + roundExtents.z; k++){
+                int z = containingCell.z + k;
+                float3 check = float3(i, j, k) * entity.movement;
+                if(check.x < 0 || check.z < 0) continue;
+                
                 int xIndex = x + 128;
                 int zIndex = z + 128;
                 InstanceData inst = instanceBuffer[xIndex * 20 * 256 + zIndex * 20 + y];
@@ -101,25 +110,40 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                 float3 normal;
                 bool overlap = IsCubesOverlap(entityBox, block, normal);
                 if(normal.x == 0 && normal.y == 0 && normal.z == 0) continue;
+                if(dot(normal, moveDir) >0) continue;
                 if(instanceBuffer[(xIndex + (int)normal.x) * 20 * 256 + (zIndex + (int)normal.z) * 20 + y + (int)normal.y].available != 0) continue;
 
                 collide = true;
+                if(normal.x == 0 & normal.y == 1 && normal.z == 0){
+                    ground = true;
+                    continue;
+                }
                 float3 cross1 = cross(moveDir, normal);
                 moveDir = cross(normal, cross1); 
-                if(normal.x != 1){
-                    test = normal;
-                    LogData logData = (LogData)0;
-                    logData.result = (int)collide;
-                    logData.normal = test;
-                    logBuffer[id.x] = logData;
-                }
+                // if(normal.x != 1){
+                //     test = normal;
+                //     LogData logData = (LogData)0;
+                //     logData.result = (int)collide;
+                //     logData.normal = test;
+                //     logBuffer[id.x] = logData;
+                // }
             }
         }
     }
 
-    
-
-    
+    LogData logData = (LogData)0;
+    logData.result = (int)ground;
+    logData.normal = 1;
+    logBuffer[id.x] = logData;
+    float gravity = -9.81;
+    if(!ground){
+        float y = entity.movement.y;
+        y += gravity * deltaTime;
+        entityBuffer[id.x].movement = float3(0, y, 0);
+    }
+    else{
+        entityBuffer[id.x].movement.y = 0;
+    }
 
     if(!collide) oldPos = position;
     else oldPos += moveDir * deltaTime;
@@ -127,5 +151,4 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     entityBuffer[id.x].trs._m03 = oldPos.x;
     entityBuffer[id.x].trs._m13 = oldPos.y;
     entityBuffer[id.x].trs._m23 = oldPos.z;
-
 }

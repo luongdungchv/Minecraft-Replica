@@ -10,6 +10,7 @@ public class GPUCharacterMovement : Sirenix.OdinInspector.SerializedMonoBehaviou
     [SerializeField] private float speed, rotationSpd;
     [SerializeField] private Matrix4x4 logMatrix;
     [SerializeField] private Vector3 logVector;
+    [SerializeField] private GameObject markerCube;
 
     private int entityID;
     private EntityData[] dataStore;
@@ -18,7 +19,7 @@ public class GPUCharacterMovement : Sirenix.OdinInspector.SerializedMonoBehaviou
     private void Awake(){
         var entity = new EntityData(){
             movement = Vector3.zero,
-            extents = new Vector3(0.5f, 0.4f, 0.5f),
+            extents = new Vector3(0.3f, 1f, 0.3f),
             trs = Matrix4x4.TRS(transform.position, transform.rotation, Vector3.one),
             fallingSpd = 0,
             orientation = transform.eulerAngles.y,
@@ -38,9 +39,11 @@ public class GPUCharacterMovement : Sirenix.OdinInspector.SerializedMonoBehaviou
     private void Update() {
         var x = Input.GetAxisRaw("Horizontal");
         var z = Input.GetAxisRaw("Vertical");
-        var moveVector = (transform.right * x + transform.forward * z).normalized * speed;
+        var moveVector = (transform.right * x + transform.forward.Set(y: 0).normalized * z).normalized * speed;
         this.logVector = moveVector;
+        moveVector += Vector3.up * (Input.GetKeyDown(KeyCode.Space) ? 5 : 0);
         this.characterMoveShader.SetVector("movement", moveVector);
+
 
         this.PerformRotation(); 
         this.characterMoveShader.Dispatch(0, 1, 1, 1);
@@ -53,7 +56,8 @@ public class GPUCharacterMovement : Sirenix.OdinInspector.SerializedMonoBehaviou
         eulers.y += rotY * rotationSpd * Time.deltaTime;
         eulers.x -= rotX * rotationSpd * Time.deltaTime;
 
-        characterMoveShader.SetFloat("orientation", eulers.y);
+        //characterMoveShader.SetFloat("orientation", eulers.y); 
+        transform.eulerAngles = eulers;
     }
 
     private void LateUpdate() {
@@ -61,7 +65,8 @@ public class GPUCharacterMovement : Sirenix.OdinInspector.SerializedMonoBehaviou
         dataBuffer.GetData(this.dataStore);
         this.logMatrix = dataStore[0].trs;
         transform.position = (Vector3)dataStore[0].trs.GetColumn(3);
-        transform.eulerAngles = transform.eulerAngles.Set(y: dataStore[0].orientation);
+        //transform.eulerAngles = transform.eulerAngles.Set(y: dataStore[0].orientation);
+        markerCube.transform.position = transform.position;
     }
 
     private void OnDestroy() {

@@ -165,6 +165,14 @@ public class MapGenerator : MonoBehaviour
 
         this.drawMaterial.SetBuffer("uvDepthBuffer", this.uvDepthBuffer);
         this.drawMaterial.SetBuffer("uvDepthMap", this.uvDepthMapping);
+        this.drawMaterial.SetVectorArray("dirs", new Vector4[]{
+            new Vector3(0, 0, 1),
+            new Vector3(0, 1, 0),
+            new Vector3(0, 0, -1),
+            new Vector3(0, -1, 0),
+            new Vector3(-1, 0, 0),
+            new Vector3(1, 0, 0)
+        });
 
         tempBuffer.Dispose();
 

@@ -150,13 +150,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 321693819}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: 0, y: 0.38268343, z: 0, w: 0.92387956}
+  m_LocalPosition: {x: -2.9, y: 11.2, z: -70.96629}
+  m_LocalScale: {x: 0.6, y: 2, z: 0.6}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 330585546}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 45, z: 0}
 --- !u!65 &321693821
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -316,12 +316,11 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0.3579849, z: 0, w: 0.93372744}
-  m_LocalPosition: {x: -4.235, y: 12.4, z: -70.96629}
+  m_LocalPosition: {x: -2.9, y: 18, z: -70.96629}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 410087041}
-  - {fileID: 321693820}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -41.953, z: 0}
 --- !u!114 &330585547
@@ -393,7 +392,7 @@ MonoBehaviour:
   characterMoveShader: {fileID: 7200000, guid: 3492dc522dd54e2419d4081b6f1f8fd2, type: 3}
   dataRetrieveShader: {fileID: 7200000, guid: 0a3abebd7f297c745b7d51bae80ee2f6, type: 3}
   gravityAcceleration: -9.81
-  speed: 6
+  speed: 3
   rotationSpd: 120
   logMatrix:
     e00: 0
@@ -413,6 +412,7 @@ MonoBehaviour:
     e32: 0
     e33: 0
   logVector: {x: 0, y: 0, z: 0}
+  markerCube: {fileID: 321693819}
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -562,7 +562,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   noiseGeneratorCS: {fileID: 7200000, guid: aa39899997e54ca4896d3eb007e32e6a, type: 3}
   targetTexture: {fileID: 8400000, guid: 7feee9d897a4d0044ae1cd2422a63740, type: 2}
-  noiseScale: 10
+  noiseScale: 25.16
   testOffset: {x: 0, y: 0}
 --- !u!4 &456862207
 Transform:
@@ -975,7 +975,7 @@ MonoBehaviour:
   noiseGenerator: {fileID: 456862206}
   maxHeight: 20
   blockMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  drawMaterial: {fileID: 2100000, guid: e17f517a698278843a8dd8bff96acf0b, type: 2}
+  drawMaterial: {fileID: 2100000, guid: 7eb2ea1a3e1c3a549a4e72b2b065f76a, type: 2}
   testMat: {fileID: 2100000, guid: 5fa8054f977b9814a8e4ea7d38a5ea5f, type: 2}
   datas: []
   logsVerts:
@@ -1035,8 +1035,8 @@ MonoBehaviour:
   logsTris: 0000000002000000030000000000000003000000010000000800000004000000050000000800000005000000090000000a00000006000000070000000a000000070000000b0000000c0000000d0000000e0000000c0000000e0000000f000000100000001100000012000000100000001200000013000000140000001500000016000000140000001600000017000000
   blockInfos:
   - {fileID: 11400000, guid: b26b9b400fc6b47469f0f9093472da5d, type: 2}
-  - {fileID: 11400000, guid: a7c78c73770108a45bb1cd7930ee3e22, type: 2}
   - {fileID: 11400000, guid: 88082ee40e07d2d4bbc610faa6992b4a, type: 2}
+  - {fileID: 11400000, guid: a7c78c73770108a45bb1cd7930ee3e22, type: 2}
   - {fileID: 11400000, guid: c4e35af0306450642b6d27bcec3f33d8, type: 2}
 --- !u!4 &1508305056
 Transform:
@@ -1114,9 +1114,10 @@ SceneRoots:
   m_Roots:
   - {fileID: 330585546}
   - {fileID: 832575519}
-  - {fileID: 456862207}
   - {fileID: 780805241}
+  - {fileID: 456862207}
   - {fileID: 1508305056}
   - {fileID: 620384851}
   - {fileID: 1011209338}
   - {fileID: 1014415634}
+  - {fileID: 321693820}

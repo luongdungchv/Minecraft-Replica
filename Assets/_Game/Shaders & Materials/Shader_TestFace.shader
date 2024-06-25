@@ -18,7 +18,6 @@ Shader "Custom/Block face"
             #pragma fragment frag
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
-            #include "Assets/Shader Headers/Random.cginc"
 
             struct InstanceData{
                 float4x4 trs;
@@ -48,6 +47,7 @@ Shader "Custom/Block face"
                 SAMPLER(sampler_MainTex);
                 uniform float4 _MainTex_ST;
                 uniform float4 _Color;
+                uniform float3 dirs[6];
             CBUFFER_END
             Texture2DArray _Textures;
             SamplerState sampler_Textures;
@@ -63,7 +63,7 @@ Shader "Custom/Block face"
             Varyings vert (Attributes attr)
             {
                 Varyings output;
-                //output.positionCS = TransformObjectToHClip(attr.positionOS);
+
                 int instID = faceBuffer[attr.instanceID].instanceIndex;
                 float4x4 trs = instanceBuffer[instID].trs;
                 int blockType = instanceBuffer[instID].available;
@@ -87,7 +87,6 @@ Shader "Custom/Block face"
 
             half4 frag (Varyings input) : SV_Target
             {
-                //float4 col = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
                 float4 col = SAMPLE_TEXTURE2D_ARRAY(_Textures, sampler_Textures, input.uv.xy, input.uv.z);
                 return col;
             }

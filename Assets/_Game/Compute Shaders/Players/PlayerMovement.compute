@@ -11,6 +11,8 @@ float orientation;
 [numthreads(1,1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    entityBuffer[0].movement = movement;
+    entityBuffer[0].movement.x = movement.x;
+    entityBuffer[0].movement.z = movement.z;
+    entityBuffer[0].movement.y += movement.y;
     entityBuffer[0].orientation = orientation;
 }
