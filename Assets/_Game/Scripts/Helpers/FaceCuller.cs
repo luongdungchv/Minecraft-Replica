@@ -31,7 +31,8 @@ public class FaceCuller : MonoBehaviour
         //faceCullShader.SetBuffer(0, "testResult", testBuffer);
         faceCullShader.SetInt("width", this.width);
         faceCullShader.SetInt("height", this.height);
-        faceCullShader.SetFloat("maxHeight", this.maxHeight);
+        faceCullShader.SetInt("maxHeight", this.maxHeight);
+        faceCullShader.SetInt("size", this.width);
         faceCullShader.SetVectorArray("dirs", new Vector4[]{
             new Vector3(0, 1, 0),
             new Vector3(0, 0, 1),

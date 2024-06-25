@@ -6,7 +6,7 @@ RWStructuredBuffer<InstanceData> Input;
 AppendStructuredBuffer<FaceData> Result;
 AppendStructuredBuffer<InstanceData> testResult;
 
-uint maxHeight, width, height;
+int maxHeight, size;
 float3 camPos, camForward;
 
 int3 dirs[6];
@@ -14,7 +14,7 @@ int3 dirs[6];
 [numthreads(8,8,8)]
 void CSMain (int3 id : SV_DispatchThreadID)
 {
-    uint inputIndex = id.x * 20 * 256 + id.y * 20 + id.z;
+    uint inputIndex = id.x * maxHeight * size + id.y * maxHeight + id.z;
     InstanceData input = Input[inputIndex];
     if(input.available == 0) return;
     for(uint i = 0; i < 6; i++){
@@ -36,7 +36,7 @@ void CSMain (int3 id : SV_DispatchThreadID)
             Result.Append(face);
             continue;
         }
-        InstanceData ins = Input[adjID.x * 20 * 256 + adjID.y * 20 + adjID.z];
+        InstanceData ins = Input[adjID.x * maxHeight * size + adjID.y * maxHeight + adjID.z];
         if(!ins.available){
             FaceData face = (FaceData)0;
             face.instanceIndex = inputIndex;

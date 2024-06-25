@@ -4,14 +4,12 @@
 #include "../Includes/Common.hlsl"
 
 float2 offset;
-float size;
-
 Texture2D<float> Input;
 RWStructuredBuffer<InstanceData> instancesData;
 AppendStructuredBuffer<InstanceData> testBuffer;
 
-float maxHeight;
-uint width, height;
+int maxHeight;
+int size;
 
 float4x4 QuatToMatrix(float4 q)
 {
@@ -41,7 +39,7 @@ void GenerateMap (uint3 id : SV_DispatchThreadID)
     float2 dir = float2(id.xy) - center;
  
     InstanceData data = (InstanceData)0;
-    uint index = id.x * 20 * 256 + id.y * 20 + id.z;
+    uint index = id.x * maxHeight * size + id.y * maxHeight + id.z;
     if(id.z <= height){
         float2 a = offset + dir;
 

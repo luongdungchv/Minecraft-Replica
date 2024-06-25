@@ -33,6 +33,8 @@ public class GPUEntityMovementDispatch : MonoBehaviour
         this.movementHandleShader.SetBuffer(0, "entityBuffer", this.entityBuffer);
         this.movementHandleShader.SetBuffer(0, "logBuffer", this.logBuffer);
         this.movementHandleShader.SetBuffer(0, "instanceBuffer", MapGenerator.Instance.GetComponent<BaseBlocksGenerator>().InstanceBuffer);
+        this.movementHandleShader.SetInt("maxHeight", MapGenerator.Instance.MaxHeight);
+        this.movementHandleShader.SetInt("size", MapGenerator.Instance.Size);
     }
 
     // Update is called once per frame

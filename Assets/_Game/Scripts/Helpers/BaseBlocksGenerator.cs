@@ -21,9 +21,8 @@ public class BaseBlocksGenerator : MonoBehaviour
         mapGenShader.SetBuffer(0, "instancesData", this.instanceBuffer);
         mapGenShader.SetTexture(0, "Input", targetTexture);
         mapGenShader.SetFloat("size", width);
-        mapGenShader.SetFloat("maxHeight", maxHeight);
-        mapGenShader.SetInt("width", width);
-        mapGenShader.SetInt("height", height);
+        mapGenShader.SetInt("maxHeight", maxHeight);
+        mapGenShader.SetInt("size", width);
         //mapGenShader.SetBuffer(0, "testBuffer", );
     }
     public void Generate(Vector2 camPos){

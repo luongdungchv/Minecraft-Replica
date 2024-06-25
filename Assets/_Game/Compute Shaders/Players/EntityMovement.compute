@@ -13,7 +13,9 @@ struct LogData{
 RWStructuredBuffer<EntityData> entityBuffer;
 RWStructuredBuffer<LogData> logBuffer;
 StructuredBuffer<InstanceData> instanceBuffer;
+
 float deltaTime;
+int maxHeight, size;
 
 float4x4 QuatToMatrix(float4 q)
 {
@@ -99,7 +101,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                 
                 int xIndex = x + 128;
                 int zIndex = z + 128;
-                InstanceData inst = instanceBuffer[xIndex * 20 * 256 + zIndex * 20 + y];
+                InstanceData inst = instanceBuffer[xIndex * maxHeight * size + zIndex * maxHeight + y];
                 if(inst.available == 0) continue;
 
                 Box block = (Box)0;
@@ -111,7 +113,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                 bool overlap = IsCubesOverlap(entityBox, block, normal);
                 if(normal.x == 0 && normal.y == 0 && normal.z == 0) continue;
                 if(dot(normal, moveDir) >0) continue;
-                if(instanceBuffer[(xIndex + (int)normal.x) * 20 * 256 + (zIndex + (int)normal.z) * 20 + y + (int)normal.y].available != 0) continue;
+                if(instanceBuffer[(xIndex + (int)normal.x) * maxHeight * size + (zIndex + (int)normal.z) * maxHeight + y + (int)normal.y].available != 0) continue;
 
                 collide = true;
                 if(normal.x == 0 & normal.y == 1 && normal.z == 0){
@@ -135,7 +137,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     logData.result = (int)ground;
     logData.normal = 1;
     logBuffer[id.x] = logData;
-    float gravity = -9.81;
+    float gravity = -12;
     if(!ground){
         float y = entity.movement.y;
         y += gravity * deltaTime;

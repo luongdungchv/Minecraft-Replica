@@ -31,6 +31,9 @@ public class MapGenerator : MonoBehaviour
     private ComputeBuffer frustumArgsBuffer => this.frustumCuller.ArgsBuffer;
     private ComputeBuffer frustumBuffer => this.frustumCuller.FrustumBuffer;
 
+    public int MaxHeight => this.maxHeight;
+    public int Size => this.noiseGenerator.Width;
+
     private Bounds bounds;
 
     private void Awake()
