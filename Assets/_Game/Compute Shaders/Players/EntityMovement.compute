@@ -15,6 +15,7 @@ RWStructuredBuffer<LogData> logBuffer;
 StructuredBuffer<InstanceData> instanceBuffer;
 
 float deltaTime;
+float2 offset;
 int maxHeight, size;
 
 float4x4 QuatToMatrix(float4 q)
@@ -49,7 +50,7 @@ float4x4 MakeTRSMatrix(float3 pos, float4 rotQuat, float3 scale)
 [numthreads(8,1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    
+    float3 offset3D = float3(offset.x, 0, offset.y);
     EntityData entity = entityBuffer[id.x];
     float3 position = entity.trs._m03_m13_m23;
     float3 oldPos = position;
@@ -79,7 +80,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     //float2 proj = GetProjectionRange(entityBox, float2(0, 1));
 
     float3 roundExtents = ceil(entity.extents);
-    float3 containingCell = FindCellContain(position);
+    float3 containingCell = FindCellContain(position - offset3D);
 
     float3 normal;
     bool result = IsCubesOverlap(entityBox, block, normal);
@@ -91,12 +92,17 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float3 test = float3(0,0,0);
     for(int i = -roundExtents.x; i <= roundExtents.x; i++){
         int x = containingCell.x + i;
+        
         for(int j = -roundExtents.y; j <= roundExtents.y; j++){
             int y = containingCell.y + j;
+
             if(y < 0) ground = true;
+
             for(int k = -roundExtents.z; k <= + roundExtents.z; k++){
                 int z = containingCell.z + k;
+
                 float3 check = float3(i, j, k) * entity.movement;
+
                 if(check.x < 0 || check.z < 0) continue;
                 
                 int xIndex = x + 128;
@@ -105,7 +111,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                 if(inst.available == 0) continue;
 
                 Box block = (Box)0;
-                block.center = float3(x, y, z);
+                block.center = float3(x, y, z) + offset3D;
                 block.extents = float3(0.5, 0.5, 0.5);
                 block.orientation = 0;
 

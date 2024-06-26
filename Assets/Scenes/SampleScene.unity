@@ -702,7 +702,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!64 &780805238
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -1240,7 +1240,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 88082ee40e07d2d4bbc610faa6992b4a, type: 2}
   - {fileID: 11400000, guid: a7c78c73770108a45bb1cd7930ee3e22, type: 2}
   - {fileID: 11400000, guid: c4e35af0306450642b6d27bcec3f33d8, type: 2}
-  chunkSize: 0
+  chunkSize: 5
+  player: {fileID: 330585548}
+  currentCell: {x: 0, y: 0}
 --- !u!4 &1508305056
 Transform:
   m_ObjectHideFlags: 0

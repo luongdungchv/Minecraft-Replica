@@ -43,7 +43,7 @@ public class FaceCuller : MonoBehaviour
         });
     }
 
-    public void Cull(Vector3 camPos){
+    public void Cull(){
         faceCullShader.SetVector("camPos", mainCam.transform.position);
         faceCullShader.SetVector("camForward", mainCam.transform.forward);
         faceCullShader.Dispatch(0, Mathf.CeilToInt(width / 8), Mathf.CeilToInt(height / 8), Mathf.CeilToInt(maxHeight / 8));

@@ -35,6 +35,7 @@ public class GPUEntityMovementDispatch : MonoBehaviour
         this.movementHandleShader.SetBuffer(0, "instanceBuffer", MapGenerator.Instance.GetComponent<BaseBlocksGenerator>().InstanceBuffer);
         this.movementHandleShader.SetInt("maxHeight", MapGenerator.Instance.MaxHeight);
         this.movementHandleShader.SetInt("size", MapGenerator.Instance.Size);
+        
     }
     void Update()
     {
@@ -47,6 +48,7 @@ public class GPUEntityMovementDispatch : MonoBehaviour
     }
     private void EntitySystemDispatch(){
         this.movementHandleShader.SetFloat("deltaTime", Time.deltaTime);
+        this.movementHandleShader.SetVector("offset", MapGenerator.Instance.WorldOffset);
         this.movementHandleShader.Dispatch(0, Mathf.CeilToInt((float)this.entitiesDataList.Count / 8), 1, 1);
     }
 

@@ -26,7 +26,7 @@ public class BaseBlocksGenerator : MonoBehaviour
         //mapGenShader.SetBuffer(0, "testBuffer", );
     }
     public void Generate(Vector2 camPos){
-        mapGenShader.SetVector("offset", camPos.XZ());
+        mapGenShader.SetVector("offset", camPos);
         mapGenShader.Dispatch(0, Mathf.CeilToInt(this.width / 8), Mathf.CeilToInt(this.height / 8), Mathf.CeilToInt(maxHeight / 8));
     }
 }

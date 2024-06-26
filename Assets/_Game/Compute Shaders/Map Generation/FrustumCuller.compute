@@ -6,16 +6,16 @@ RWStructuredBuffer<InstanceData> instanceBuffer;
 StructuredBuffer<FaceData> faceBuffer;
 AppendStructuredBuffer<FaceData> result;
 
-float3 camPos;
+float3 camPos, camForward;
 float4x4 vp;
 
 float3 dirs[6];
 
-[numthreads(8,1,1)]
+[numthreads(128,1,1)]
 void CSMain (int3 id : SV_DispatchThreadID)
 {
-    // InstanceData input = instanceBuffer[faceBuffer[id.x].instanceIndex];
-    // float4 pos = float4(input.trs._m03_m13_m23 + dirs[faceBuffer[id.x].vertexIndex], 1);
+    InstanceData input = instanceBuffer[faceBuffer[id.x].instanceIndex];
+    float3 pos = input.trs._m03_m13_m23;
 
     // float4 viewspace = mul(vp, pos);
     // float4 clipspace = viewspace;
@@ -27,5 +27,11 @@ void CSMain (int3 id : SV_DispatchThreadID)
     // if(inView){
     //     result.Append(faceBuffer[id.x]);
     // }
+    FaceData face = faceBuffer[id.x];
+
+    // float3 normal = dirs[face.vertexIndex];
+    // float3 position = instanceBuffer[face.instanceIndex].trs._m03_m13_m23 + normal;
+    if(dot(pos - camPos, camForward) < 0) return;
+    if(dot(dirs[faceBuffer[id.x].vertexIndex], camPos - pos) <= 0) return;
     result.Append(faceBuffer[id.x]);
 }

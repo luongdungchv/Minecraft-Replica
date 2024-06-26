@@ -19,7 +19,7 @@ public class NoiseGenerator : MonoBehaviour
     }
 
     private void Update(){
-        //this.GenerateNoise(this.testOffset);
+        this.GenerateNoise(this.testOffset);
     }
 
     public void GenerateNoise(Vector2 offset){

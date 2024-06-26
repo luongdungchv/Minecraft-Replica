@@ -71,28 +71,6 @@ Shader "Custom/URP Lit"
             StructuredBuffer<float> uvDepthBuffer;
             StructuredBuffer<float2> uvBuffer;
 
-            InputData InitializePBRInput(Varyings input){
-                InputData pbrInput = (InputData)0;
-                pbrInput.positionWS = input.positionWS;
-                pbrInput.positionCS = input.positionCS;
-                pbrInput.fogCoord = input.fogCoord;
-                pbrInput.shadowCoord = input.shadowCoord;
-                pbrInput.normalWS = NormalizeNormalPerPixel(input.normalWS);
-                pbrInput.viewDirectionWS = input.viewDirectionWS;
-                pbrInput.bakedGI = SAMPLE_GI(input.staticLightmapUV, input.vertexSH, pbrInput.normalWS);
-                return pbrInput;
-            }
-            SurfaceData InitializeSurfaceData(Varyings input){
-                SurfaceData surfData = (SurfaceData)0;
-                float4 baseMap = SAMPLE_TEXTURE2D_ARRAY(_Textures, sampler_Textures, input.uv.xy, input.uv.z);
-                surfData.albedo = baseMap;
-                surfData.smoothness = _Glossiness;
-                surfData.metallic = _Metallic;
-                surfData.alpha = baseMap.a;
-                surfData.occlusion = 1;
-                return surfData;
-            }
-
             Varyings vert(Attributes vertexInput){
                 Varyings output = (Varyings)0;
 
@@ -117,10 +95,10 @@ Shader "Custom/URP Lit"
                 //output.uv = vertexInput.uv;
                 //output.normalWS = TransformObjectToWorldNormal(vertexInput.normal);
                 output.normalWS = dirs[faceBuffer[vertexInput.instanceID].vertexIndex];
-                output.fogCoord = ComputeFogFactor(output.positionCS.z);
-                output.positionWS = positionWS;
-                output.shadowCoord = TransformWorldToShadowCoord(output.positionWS);
-                output.viewDirectionWS = GetWorldSpaceNormalizeViewDir(output.positionWS);
+                //output.fogCoord = ComputeFogFactor(output.positionCS.z);
+                //output.positionWS = positionWS;
+                //output.shadowCoord = TransformWorldToShadowCoord(output.positionWS);
+                //output.viewDirectionWS = GetWorldSpaceNormalizeViewDir(output.positionWS);
 
                 return output;
             }

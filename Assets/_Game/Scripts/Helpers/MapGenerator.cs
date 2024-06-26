@@ -14,6 +14,7 @@ public class MapGenerator : MonoBehaviour
     [SerializeField] private Material drawMaterial, testMat;
     [SerializeField] private List<BlockInfo> blockInfos;
     [SerializeField] private int chunkSize;
+    [SerializeField] private GPUCharacterMovement player;
     private ComputeBuffer vertexBuffer, drawArgsBuffer;
     private ComputeBuffer indexBuffer, uvBuffer, uvDepthBuffer, uvDepthMapping;
 
@@ -22,6 +23,8 @@ public class MapGenerator : MonoBehaviour
     private FrustumCuller frustumCuller;
     private DuplicatesRemover duplicatesRemover;
 
+    [SerializeField] private Vector2Int currentCell;
+
     private ComputeBuffer instanceBuffer => blocksGenerator.InstanceBuffer;
     private ComputeBuffer faceBuffer => faceCuller.FaceBuffer;
     private ComputeBuffer frustumArgsBuffer => this.frustumCuller.ArgsBuffer;
@@ -29,6 +32,7 @@ public class MapGenerator : MonoBehaviour
 
     public int MaxHeight => this.maxHeight;
     public int Size => this.noiseGenerator.Width;
+    public Vector2 WorldOffset => new Vector2((float)currentCell.x * chunkSize, (float)currentCell.y * chunkSize);
 
     private Bounds bounds;
 
@@ -49,16 +53,39 @@ public class MapGenerator : MonoBehaviour
         this.InitArgsBuffer();
 
         this.bounds = new Bounds(Vector3.zero, Vector3.one * 15000);
-        LoadBaseBlocks();
+        LoadBaseBlocks(Vector3.zero);
     }
 
     private void Update()
     {
+        this.DetectChunkChange();
         this.GenerateBaseWorldAround(Vector3.zero);
 
         this.DrawBlocks(Vector3.zero);
-        this.faceBuffer.SetCounterValue(0);
+        //this.faceBuffer.SetCounterValue(0);
         this.frustumBuffer.SetCounterValue(0);
+
+    }
+
+    private void DetectChunkChange()
+    {
+        Vector2 posXZ = player.transform.position.XZ();
+        posXZ += Vector2.one * chunkSize / 2;
+        posXZ.x /= chunkSize;
+        posXZ.y /= chunkSize;
+        var cell = new Vector2Int((int)posXZ.x, (int)posXZ.y);
+        if (posXZ.x < 0) cell.x--;
+        if (posXZ.y < 0) cell.y--;
+
+        if (cell != currentCell)
+        {
+            currentCell = cell;
+            Debug.Log("chunk change");
+            noiseGenerator.GenerateNoise(this.WorldOffset);
+            blocksGenerator.Generate(this.WorldOffset);
+            this.faceBuffer.SetCounterValue(0);
+            faceCuller.Cull();
+        }
     }
 
     [Sirenix.OdinInspector.Button]
@@ -79,12 +106,7 @@ public class MapGenerator : MonoBehaviour
     [Sirenix.OdinInspector.Button]
     private void Test2()
     {
-        // this.logUVs = this.blockMesh.uv;
-        // this.logsVerts = this.blockMesh.vertices;
-        // this.logsTris = blockMesh.triangles;
-
         float[] test = new float[12];
-        //this.uvDepthBuffer = new ComputeBuffer(6, sizeof(int));
         this.uvDepthBuffer.GetData(test);
         foreach (var i in test) Debug.Log(i);
     }
@@ -102,28 +124,25 @@ public class MapGenerator : MonoBehaviour
         frustumCuller.Initialize(noiseGenerator.Width, noiseGenerator.Height, this.maxHeight);
         duplicatesRemover.Initialize(noiseGenerator.Width * noiseGenerator.Height * maxHeight);
 
-        
+
         this.drawMaterial.SetBuffer("instanceBuffer", instanceBuffer);
         this.drawMaterial.SetBuffer("positionBuffer", this.vertexBuffer);
-        this.drawMaterial.SetBuffer("faceBuffer", this.faceBuffer);
+        this.drawMaterial.SetBuffer("faceBuffer", this.frustumBuffer);
         this.drawMaterial.SetBuffer("indexBuffer", this.indexBuffer);
         this.drawMaterial.SetBuffer("uvBuffer", this.uvBuffer);
         //this.drawMaterial.SetTexture("_Textures", this.CreateTextureArray());
     }
     private void GenerateBaseWorldAround(Vector3 playerPos)
     {
-        //blocksGenerator.Generate(playerPos);
-        faceCuller.Cull(playerPos);
-
         ComputeBuffer.CopyCount(faceBuffer, frustumArgsBuffer, 0);
-        //this.frustumCuller.Cull();
-        ComputeBuffer.CopyCount(faceBuffer, drawArgsBuffer, 4);
+        frustumCuller.Cull();
+        ComputeBuffer.CopyCount(frustumBuffer, drawArgsBuffer, 4);
     }
 
-    private void LoadBaseBlocks()
+    private void LoadBaseBlocks(Vector2 offset)
     {
-        noiseGenerator.GenerateNoise(Vector3.zero);
-        blocksGenerator.Generate(Vector3.zero);
+        noiseGenerator.GenerateNoise(offset);
+        blocksGenerator.Generate(offset);
 
         this.duplicatesRemover.Perform();
 
@@ -134,7 +153,7 @@ public class MapGenerator : MonoBehaviour
         var output = new int[temp[0]];
         duplicatesRemover.OutputBuffer.GetData(output);
         output[0] = 2;
-        output[1] = 1; 
+        output[1] = 1;
 
         this.drawMaterial.SetTexture("_Textures", this.CreateTextureArray(output));
 
@@ -143,7 +162,7 @@ public class MapGenerator : MonoBehaviour
         var map = new int[4];
 
         var currentCount = 0;
-        for(int i = 0; i < output.Length; i++)
+        for (int i = 0; i < output.Length; i++)
         {
             var blockID = output[i] - 1;
             map[blockID] = i;
@@ -172,6 +191,8 @@ public class MapGenerator : MonoBehaviour
         });
 
         tempBuffer.Dispose();
+
+        faceCuller.Cull();
 
     }
 
@@ -242,7 +263,8 @@ public class MapGenerator : MonoBehaviour
         {
             filterMode = FilterMode.Point
         };
-        for(int i = 0; i < texList.Count; i++){
+        for (int i = 0; i < texList.Count; i++)
+        {
             texArray.SetPixels32(texList[i].GetPixels32(), i);
         }
         texArray.Apply();

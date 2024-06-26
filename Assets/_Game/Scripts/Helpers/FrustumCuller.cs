@@ -54,6 +54,7 @@ public class FrustumCuller : MonoBehaviour
         var VP = p * v;
         frustumCullShader.SetMatrix("vp", VP);
         frustumCullShader.SetVector("camPos", Camera.main.transform.position);
+        frustumCullShader.SetVector("camForward", Camera.main.transform.forward);
         frustumCullShader.DispatchIndirect(0, this.frustumArgsBuffer);
     }
 }
