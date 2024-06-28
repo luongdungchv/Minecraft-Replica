@@ -16,6 +16,8 @@ public class GPUCharacterMovement : Sirenix.OdinInspector.SerializedMonoBehaviou
     private EntityData[] dataStore;
     private ComputeBuffer dataBuffer;
 
+    private Camera mainCam;
+
     private void Awake(){
         var entity = new EntityData(){
             movement = Vector3.zero,
@@ -28,6 +30,7 @@ public class GPUCharacterMovement : Sirenix.OdinInspector.SerializedMonoBehaviou
         this.dataStore = new EntityData[1];
         this.dataBuffer = new ComputeBuffer(1, EntityData.Size);
         dataBuffer.SetData(dataStore);
+        this.mainCam = Camera.main;
     }
 
     private void Start(){
@@ -39,7 +42,7 @@ public class GPUCharacterMovement : Sirenix.OdinInspector.SerializedMonoBehaviou
     private void Update() {
         var x = Input.GetAxisRaw("Horizontal");
         var z = Input.GetAxisRaw("Vertical");
-        var moveVector = (transform.right * x + transform.forward.Set(y: 0).normalized * z).normalized * speed;
+        var moveVector = (mainCam.transform.right * x + mainCam.transform.forward.Set(y: 0).normalized * z).normalized * speed;
         this.logVector = moveVector;
         moveVector += Vector3.up * (Input.GetKeyDown(KeyCode.Space) ? 5 : 0);
         this.characterMoveShader.SetVector("movement", moveVector);
@@ -52,12 +55,12 @@ public class GPUCharacterMovement : Sirenix.OdinInspector.SerializedMonoBehaviou
     private void PerformRotation(){
         var rotY = Input.GetAxis("Mouse X");
         var rotX = Input.GetAxis("Mouse Y");
-        var eulers = transform.eulerAngles;
+        var eulers = mainCam.transform.eulerAngles;
         eulers.y += rotY * rotationSpd * Time.deltaTime;
         eulers.x -= rotX * rotationSpd * Time.deltaTime;
 
         //characterMoveShader.SetFloat("orientation", eulers.y); 
-        transform.eulerAngles = eulers;
+        mainCam.transform.eulerAngles = eulers;
     }
 
     private void LateUpdate() {
