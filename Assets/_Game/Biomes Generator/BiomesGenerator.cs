@@ -80,4 +80,11 @@ public class BiomesGenerator : MonoBehaviour
         this.baseMapGenShader.SetTexture(baseMapKernel, "BiomeMap", biomeMapTex);
         this.baseMapGenShader.Dispatch(baseMapKernel, 1, 1, 1);
     }
+
+    [Sirenix.OdinInspector.Button]
+    private void TestGenFinal(int zoomLevel){
+        this.baseMapGenShader.SetInts("offset", this.testOffset.x, this.testOffset.y);
+        this.baseMapGenShader.SetFloat("seed", this.testSeed);
+        this.baseMapGenShader.SetFloat("zoomLevel", 7);
+    }
 }
