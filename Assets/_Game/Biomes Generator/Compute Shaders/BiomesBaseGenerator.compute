@@ -65,16 +65,16 @@ void CopyIntMapToFloatMap(int3 id: SV_DispatchThreadID){
 
 [numthreads(8, 8, 1)]
 void TransferTemp(int3 id: SV_DispatchThreadID){
-    if(id.x < 3 || id.y < 3 || id.x == 7 || id.y == 7) return;
-    int2 biomeID = id.xy - float2(3, 3);
+    if(id.x < 2 || id.y < 2 || id.x >= 6 || id.y >= 6) return;
+    int2 biomeID = id.xy - float2(2, 2);
     float value = tempMap[id.xy];
     if(value > 0){
         float random = rand1dTo1d(seed + offset.x * 4 + offset.y + id.x * 4 + id.y + zoomLevel);
-        value = step(0.3, random);
+        value = step(0.15, random);
     }
     else{   
         float random = rand1dTo1d(seed + offset.x * 3 + offset.y + id.x * 5 + id.y + zoomLevel);
         value = step(0.85, random);
     }
-    BiomeMap[biomeID.xy] = value;
+    BiomeMap[biomeID.xy] = value; 
 }
