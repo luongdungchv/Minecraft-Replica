@@ -37,6 +37,7 @@ public class GPUCharacterMovement : Sirenix.OdinInspector.SerializedMonoBehaviou
         this.dataRetrieveShader.SetBuffer(0, "entity", dataBuffer);
         this.dataRetrieveShader.SetBuffer(0, "entityBuffer", movementDispatcher.EntityBuffer);
         this.characterMoveShader.SetBuffer(0, "entityBuffer", movementDispatcher.EntityBuffer);
+        Cursor.visible = false;
     }
 
     private void Update() {
@@ -50,6 +51,9 @@ public class GPUCharacterMovement : Sirenix.OdinInspector.SerializedMonoBehaviou
 
         this.PerformRotation(); 
         this.characterMoveShader.Dispatch(0, 1, 1, 1);
+        
+        Cursor.visible = Input.GetKey(KeyCode.LeftAlt);
+        Cursor.lockState = Cursor.visible ? CursorLockMode.None : CursorLockMode.Locked;
     }
 
     private void PerformRotation(){
