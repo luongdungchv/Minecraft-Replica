@@ -1,0 +1,80 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel GenerateBase
+#pragma kernel ClearTempMap
+#pragma kernel GenerateZoomLevel
+#pragma kernel CopyIntMapToFloatMap
+#pragma kernel TransferTemp
+
+#include "Assets/Shader Headers/Random.cginc"
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float> BiomeMap, tempMap;
+RWTexture2D<int> tempMapInt;
+
+float seed, zoomLevel, occupiedSize;
+int2 offset, chunkSize, corner;
+
+float2 dirs[4];
+
+[numthreads(4,4,1)]
+void GenerateBase(uint3 id : SV_DispatchThreadID)
+{
+    int2 baseOffset = offset / 4096;
+    float randomValue = rand1dTo1d(seed + (float)baseOffset.x * 4 + (float)baseOffset.y + id.x * 4 + id.y);
+    BiomeMap[id.xy] = step(0.84, randomValue);
+    //float originalCellVal = BiomeMap[id.xy];
+    //tempMap[id.xy] = step(0.6, randomValue);
+   // Result[id.xy] = randomValue;
+}
+[numthreads(8, 8, 1)]
+void GenerateZoomLevel(int3 id: SV_DispatchThreadID){
+    //if(id.x < 3 || id.y < 3 || id.x == 7 || id.y == 7) return;
+    int cellSize = 4096 / pow(2, zoomLevel - 1);
+    int2 baseOffset = offset / cellSize;
+    int2 parentOffset = offset / (4096 / pow(2, zoomLevel - 2));
+
+    float originalCellVal = BiomeMap[id.xy / 2];
+    //tempMap[id.xy] = (int)(originalCellVal * 1000);
+    tempMap[id.xy] = originalCellVal;
+    if(originalCellVal == 0) return;
+
+    for(int i = 0; i < 4; i++){
+        int2 adjID = id.xy + int2((int)dirs[i].x, (int)dirs[i].y);
+        if(adjID.x < 0 || adjID.y < 0) continue;
+        if(BiomeMap[adjID.xy / 2] > 0) continue;
+
+        float randomVal = rand1dTo1d(seed + parentOffset.x * 4 + parentOffset.y + adjID.x * 2 + adjID.y + i);
+        //InterlockedCompareStore(tempMapInt[adjID.xy], 0, step(0.8, randomVal) * 1000);
+        //tempMapInt[adjID.xy] = step(0.8, randomVal) * 1000;
+        if(tempMap[adjID.xy] == 0)
+            tempMap[adjID.xy] = step(0.5, randomVal);
+    }
+    // float originalCellVal = BiomeMap[id.xy];
+    // tempMap[id.xy] = (originalCellVal);
+}
+[numthreads(8, 8, 1)]
+void ClearTempMap(int3 id: SV_DispatchThreadID){
+    tempMapInt[id.xy] = 0;
+}
+
+[numthreads(8, 8, 1)]
+void CopyIntMapToFloatMap(int3 id: SV_DispatchThreadID){
+    tempMap[id.xy] = (float)tempMapInt[id.xy] / 1000;
+}
+
+[numthreads(8, 8, 1)]
+void TransferTemp(int3 id: SV_DispatchThreadID){
+    if(id.x < 3 || id.y < 3 || id.x == 7 || id.y == 7) return;
+    int2 biomeID = id.xy - float2(3, 3);
+    float value = tempMap[id.xy];
+    if(value > 0){
+        float random = rand1dTo1d(seed + offset.x * 4 + offset.y + id.x * 4 + id.y + zoomLevel);
+        value = step(0.3, random);
+    }
+    else{   
+        float random = rand1dTo1d(seed + offset.x * 3 + offset.y + id.x * 5 + id.y + zoomLevel);
+        value = step(0.85, random);
+    }
+    BiomeMap[biomeID.xy] = value;
+}
