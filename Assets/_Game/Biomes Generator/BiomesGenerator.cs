@@ -83,8 +83,20 @@ public class BiomesGenerator : MonoBehaviour
 
     [Sirenix.OdinInspector.Button]
     private void TestGenFinal(int zoomLevel){
+        if(zoomLevel < 2) return;
         this.baseMapGenShader.SetInts("offset", this.testOffset.x, this.testOffset.y);
         this.baseMapGenShader.SetFloat("seed", this.testSeed);
-        this.baseMapGenShader.SetFloat("zoomLevel", 7);
+        this.baseMapGenShader.SetFloat("zoomLevel", zoomLevel);
+        
+        var finalGenKernel = this.baseMapGenShader.FindKernel("GenerateFinalPhase");
+        var transferNoCutKernel = this.baseMapGenShader.FindKernel("TransferTempNoCut");
+        
+        this.baseMapGenShader.SetTexture(finalGenKernel, "BiomeMap", biomeMapTex);
+        this.baseMapGenShader.SetTexture(finalGenKernel, "tempMap", tempMapTex);
+        this.baseMapGenShader.Dispatch(finalGenKernel, (int)Mathf.Pow(2, zoomLevel - 2), (int)Mathf.Pow(2, zoomLevel - 2), 1);
+        
+        this.baseMapGenShader.SetTexture(transferNoCutKernel, "BiomeMap", biomeMapTex);
+        this.baseMapGenShader.SetTexture(transferNoCutKernel, "tempMap", tempMapTex);
+        this.baseMapGenShader.Dispatch(transferNoCutKernel, (int)Mathf.Pow(2, zoomLevel - 2), (int)Mathf.Pow(2, zoomLevel - 2), 1);
     }
 }
