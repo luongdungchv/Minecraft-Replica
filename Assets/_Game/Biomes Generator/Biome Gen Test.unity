@@ -154,7 +154,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   biomeMapTex: {fileID: 8400000, guid: c68227729ce1b5f41b918eb267e077fb, type: 2}
   tempMapTex: {fileID: 8400000, guid: 2bc095ff0a0228b4ea60469138ec8ac1, type: 2}
-  tempMapIntTex: {fileID: 8400000, guid: 96cd353959ae15f4085dc7a5c75e1bf6, type: 2}
+  secondTempMapTex: {fileID: 8400000, guid: 2029e43165680d548b6f0784e9b0fb9d, type: 2}
   initialBiomeCellSize: 4096
   biomeGenerationSize: 4
   baseMapGenShader: {fileID: 7200000, guid: 996525322c697e74bbf7cb22e4acf4ad, type: 3}

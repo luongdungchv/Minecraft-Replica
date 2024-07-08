@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BiomesGenerator : MonoBehaviour
 {
-    [SerializeField] private RenderTexture biomeMapTex, tempMapTex, tempMapIntTex;
+    [SerializeField] private RenderTexture biomeMapTex, tempMapTex, secondTempMapTex;
     [SerializeField] private int initialBiomeCellSize, biomeGenerationSize;
     [SerializeField] private ComputeShader baseMapGenShader;
 
@@ -39,40 +39,17 @@ public class BiomesGenerator : MonoBehaviour
         this.baseMapGenShader.SetFloat("seed", this.testSeed);
         this.baseMapGenShader.SetFloat("zoomLevel", this.testZoomLevel);
 
+        var addIslandKernel = this.baseMapGenShader.FindKernel("AddIslands");
+        var transferSecondTempKernel = this.baseMapGenShader.FindKernel("TransferTempToSec");
         
-
-        var baseMapKernel = this.baseMapGenShader.FindKernel("GenerateBase");
-        var zoomKernel = this.baseMapGenShader.FindKernel("GenerateZoomLevel");
-        var clearTempKernel = this.baseMapGenShader.FindKernel("ClearTempMap");
-        var tempCopyKernel = this.baseMapGenShader.FindKernel("CopyIntMapToFloatMap");
-        var transferTempKernel = this.baseMapGenShader.FindKernel("TransferTemp");
-        var transferNoCutKernel = this.baseMapGenShader.FindKernel("TransferTempNoCut");
-
-        this.baseMapGenShader.SetTexture(clearTempKernel, "tempMapInt", tempMapIntTex);
-        this.baseMapGenShader.Dispatch(clearTempKernel, 1, 1, 1);
-
-        this.baseMapGenShader.SetTexture(tempCopyKernel, "tempMap", tempMapTex);
-        this.baseMapGenShader.SetTexture(tempCopyKernel, "tempMapInt", tempMapIntTex);
-        this.baseMapGenShader.Dispatch(tempCopyKernel, 1, 1, 1);
-
-        // this.baseMapGenShader.SetTexture(baseMapKernel, "BiomeMap", biomeMapTex);
-        // this.baseMapGenShader.Dispatch(baseMapKernel,1,1,1);
-
-        this.baseMapGenShader.SetTexture(zoomKernel, "BiomeMap", biomeMapTex);
-        this.baseMapGenShader.SetTexture(zoomKernel, "tempMapInt", tempMapIntTex);
-        this.baseMapGenShader.SetTexture(zoomKernel, "tempMap", tempMapTex);
-        this.baseMapGenShader.Dispatch(zoomKernel, 1, 1, 1);
-
-        // this.baseMapGenShader.SetTexture(clearTempKernel, "tempMap", tempMapTex);
-
-        this.baseMapGenShader.SetTexture(transferTempKernel, "tempMap", tempMapTex);
-        this.baseMapGenShader.SetTexture(transferTempKernel, "BiomeMap", biomeMapTex);
-        this.baseMapGenShader.Dispatch(transferTempKernel, 1,1,1);
+        this.baseMapGenShader.SetTexture(addIslandKernel, "tempMap", tempMapTex);
+        this.baseMapGenShader.SetTexture(addIslandKernel, "secondTempMap", secondTempMapTex);
+        var size = testZoomLevel >= 8 ? (int)Mathf.Pow(2, testZoomLevel - 8) : 1;
+        this.baseMapGenShader.Dispatch(addIslandKernel, size, size, 1);
         
-        // this.baseMapGenShader.SetTexture(transferNoCutKernel, "BiomeMap", biomeMapTex);
-        // this.baseMapGenShader.SetTexture(transferNoCutKernel, "tempMap", tempMapTex);
-        // this.baseMapGenShader.SetFloat("zoomLevel", 2);
-        // this.baseMapGenShader.Dispatch(transferNoCutKernel, 1, 1, 1);
+        this.baseMapGenShader.SetTexture(transferSecondTempKernel, "tempMap", tempMapTex);
+        this.baseMapGenShader.SetTexture(transferSecondTempKernel, "secondTempMap", secondTempMapTex);
+        this.baseMapGenShader.Dispatch(transferSecondTempKernel, size, size, 1);
     }
 
     [Sirenix.OdinInspector.Button]
@@ -81,14 +58,24 @@ public class BiomesGenerator : MonoBehaviour
         this.baseMapGenShader.SetInts("offset", this.testOffset.x, this.testOffset.y);
         this.baseMapGenShader.SetFloat("seed", this.testSeed);
         this.baseMapGenShader.SetFloat("zoomLevel", 2);
+        
+        baseMapGenShader.SetVectorArray("dirs", new Vector4[]{
+            new Vector2(0, 1),
+            new Vector2(1, 0),
+            new Vector2(0, -1),
+            new Vector2(-1, 0)
+        });
 
         var baseMapKernel = this.baseMapGenShader.FindKernel("GenerateBase");
         this.baseMapGenShader.SetTexture(baseMapKernel, "BiomeMap", biomeMapTex);
         this.baseMapGenShader.Dispatch(baseMapKernel, 1, 1, 1);
+        
+        
     }
 
     [Sirenix.OdinInspector.Button]
-    private void TestGenFinal(int zoomLevel){
+    private void TestGenFinal(){
+        var zoomLevel = this.testZoomLevel - 6;
         if(zoomLevel < 2) return;
         this.baseMapGenShader.SetInts("offset", this.testOffset.x, this.testOffset.y);
         this.baseMapGenShader.SetFloat("seed", this.testSeed);
@@ -114,10 +101,10 @@ public class BiomesGenerator : MonoBehaviour
     }
     [Sirenix.OdinInspector.Button]
     private void TestZoomIn(){
-        var transferTempKernel = this.baseMapGenShader.FindKernel("TransferTemp");
-        this.baseMapGenShader.SetTexture(transferTempKernel, "tempMap", tempMapTex);
-        this.baseMapGenShader.SetTexture(transferTempKernel, "BiomeMap", biomeMapTex);
-        this.baseMapGenShader.Dispatch(transferTempKernel, 1,1,1);
+        var zoomKernel = this.baseMapGenShader.FindKernel("GenerateZoomLevel");
+        this.baseMapGenShader.SetTexture(zoomKernel, "secondTempMap", secondTempMapTex);
+        this.baseMapGenShader.SetTexture(zoomKernel, "BiomeMap", biomeMapTex);
+        this.baseMapGenShader.Dispatch(zoomKernel, 1,1,1);
     }
     
     [Sirenix.OdinInspector.Button]
