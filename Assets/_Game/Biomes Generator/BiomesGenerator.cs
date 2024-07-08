@@ -33,7 +33,7 @@ public class BiomesGenerator : MonoBehaviour
     }
 
     [Sirenix.OdinInspector.Button]
-    private void Test()
+    private void TestAddIsland()
     {
         this.baseMapGenShader.SetInts("offset", this.testOffset.x, this.testOffset.y);
         this.baseMapGenShader.SetFloat("seed", this.testSeed);
@@ -46,6 +46,7 @@ public class BiomesGenerator : MonoBehaviour
         var clearTempKernel = this.baseMapGenShader.FindKernel("ClearTempMap");
         var tempCopyKernel = this.baseMapGenShader.FindKernel("CopyIntMapToFloatMap");
         var transferTempKernel = this.baseMapGenShader.FindKernel("TransferTemp");
+        var transferNoCutKernel = this.baseMapGenShader.FindKernel("TransferTempNoCut");
 
         this.baseMapGenShader.SetTexture(clearTempKernel, "tempMapInt", tempMapIntTex);
         this.baseMapGenShader.Dispatch(clearTempKernel, 1, 1, 1);
@@ -67,6 +68,11 @@ public class BiomesGenerator : MonoBehaviour
         this.baseMapGenShader.SetTexture(transferTempKernel, "tempMap", tempMapTex);
         this.baseMapGenShader.SetTexture(transferTempKernel, "BiomeMap", biomeMapTex);
         this.baseMapGenShader.Dispatch(transferTempKernel, 1,1,1);
+        
+        // this.baseMapGenShader.SetTexture(transferNoCutKernel, "BiomeMap", biomeMapTex);
+        // this.baseMapGenShader.SetTexture(transferNoCutKernel, "tempMap", tempMapTex);
+        // this.baseMapGenShader.SetFloat("zoomLevel", 2);
+        // this.baseMapGenShader.Dispatch(transferNoCutKernel, 1, 1, 1);
     }
 
     [Sirenix.OdinInspector.Button]
@@ -105,5 +111,19 @@ public class BiomesGenerator : MonoBehaviour
         var removeIsolatedKernel = this.baseMapGenShader.FindKernel("RemoveIsolated");
         this.baseMapGenShader.SetTexture(removeIsolatedKernel, "BiomeMap", biomeMapTex);
         this.baseMapGenShader.Dispatch(removeIsolatedKernel, 32, 32, 1);
+    }
+    [Sirenix.OdinInspector.Button]
+    private void TestZoomIn(){
+        var transferTempKernel = this.baseMapGenShader.FindKernel("TransferTemp");
+        this.baseMapGenShader.SetTexture(transferTempKernel, "tempMap", tempMapTex);
+        this.baseMapGenShader.SetTexture(transferTempKernel, "BiomeMap", biomeMapTex);
+        this.baseMapGenShader.Dispatch(transferTempKernel, 1,1,1);
+    }
+    
+    [Sirenix.OdinInspector.Button]
+    private void TestRemoveOceans(int zoomLevel){
+        var removeOceansKernel = this.baseMapGenShader.FindKernel("RemoveOceans");
+        this.baseMapGenShader.SetTexture(removeOceansKernel, "BiomeMap", biomeMapTex);
+        this.baseMapGenShader.Dispatch(removeOceansKernel, (int)Mathf.Pow(2, zoomLevel), (int)Mathf.Pow(2, zoomLevel), 1);
     }
 }
