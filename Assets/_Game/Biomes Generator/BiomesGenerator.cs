@@ -13,7 +13,12 @@ public class BiomesGenerator : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        baseMapGenShader.SetVectorArray("dirs", new Vector4[]{
+            new Vector2(0, 1),
+            new Vector2(1, 0),
+            new Vector2(0, -1),
+            new Vector2(-1, 0)
+        });
     }
 
     // Update is called once per frame
@@ -24,7 +29,7 @@ public class BiomesGenerator : MonoBehaviour
 
     public void GenerateBiomesMap(Vector2Int offset, int chunkSize)
     {
-
+        
     }
 
     [Sirenix.OdinInspector.Button]
@@ -34,12 +39,7 @@ public class BiomesGenerator : MonoBehaviour
         this.baseMapGenShader.SetFloat("seed", this.testSeed);
         this.baseMapGenShader.SetFloat("zoomLevel", this.testZoomLevel);
 
-        baseMapGenShader.SetVectorArray("dirs", new Vector4[]{
-            new Vector2(0, 1),
-            new Vector2(1, 0),
-            new Vector2(0, -1),
-            new Vector2(-1, 0)
-        });
+        
 
         var baseMapKernel = this.baseMapGenShader.FindKernel("GenerateBase");
         var zoomKernel = this.baseMapGenShader.FindKernel("GenerateZoomLevel");
@@ -98,5 +98,12 @@ public class BiomesGenerator : MonoBehaviour
         this.baseMapGenShader.SetTexture(transferNoCutKernel, "BiomeMap", biomeMapTex);
         this.baseMapGenShader.SetTexture(transferNoCutKernel, "tempMap", tempMapTex);
         this.baseMapGenShader.Dispatch(transferNoCutKernel, (int)Mathf.Pow(2, zoomLevel - 2), (int)Mathf.Pow(2, zoomLevel - 2), 1);
+    }
+    
+    [Sirenix.OdinInspector.Button]
+    private void RemoveIsolated(){
+        var removeIsolatedKernel = this.baseMapGenShader.FindKernel("RemoveIsolated");
+        this.baseMapGenShader.SetTexture(removeIsolatedKernel, "BiomeMap", biomeMapTex);
+        this.baseMapGenShader.Dispatch(removeIsolatedKernel, 32, 32, 1);
     }
 }
