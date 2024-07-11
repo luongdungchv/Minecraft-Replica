@@ -27,7 +27,7 @@ void GenerateBase(uint3 id : SV_DispatchThreadID)
     BiomeMap[id.xy] = step(0.84, randomValue);
     //float originalCellVal = BiomeMap[id.xy];
     //tempMap[id.xy] = step(0.6, randomValue);
-   // Result[id.xy] = randomValue;
+    // BiomeMap[id.xy] = randomValue;
 }
 [numthreads(8, 8, 1)]
 void GenerateZoomLevel(int3 id: SV_DispatchThreadID){

@@ -277,7 +277,7 @@ public class MapGenerator : MonoBehaviour
 public struct InstanceData
 {
     public Matrix4x4 trs;
-    public int available;
+    public int blockType;
     public static int Size => 16 * sizeof(float) + sizeof(int);
 }
 public struct FaceData

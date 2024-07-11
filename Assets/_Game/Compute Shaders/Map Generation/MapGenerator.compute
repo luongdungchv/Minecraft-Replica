@@ -49,12 +49,12 @@ void GenerateMap (uint3 id : SV_DispatchThreadID)
 
         float4x4 trs = MakeTRSMatrix(worldPos, rotation, scale);
         data.trs = trs;
-        data.available = (int)(rand3dTo1d(worldPos) * 2) + 1;
+        data.blockType = (int)(rand3dTo1d(worldPos) * 2) + 1;
 
         instancesData[index] = data;
     }
     else{
-        data.available = 0;
+        data.blockType = 0;
         instancesData[index] = data;
     }
 
@@ -66,7 +66,7 @@ void GenerateMap (uint3 id : SV_DispatchThreadID)
 
     // float4x4 trs = MakeTRSMatrix(worldPos, rotation, scale);
     // data.trs = trs;
-    // data.available = 1;
+    // data.blockType = 1;
 
     // instancesData[id.x * 20 * 256 + id.y * 20 + id.z] = data;
     //testBuffer.Append(data);

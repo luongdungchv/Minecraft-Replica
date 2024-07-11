@@ -25,7 +25,7 @@ Shader "Custom/URP Lit"
 
             struct InstanceData{
                 float4x4 trs;
-                int available;
+                int blockType;
             };
             struct FaceData{
                 uint instanceIndex;
@@ -76,7 +76,7 @@ Shader "Custom/URP Lit"
 
                 int instID = faceBuffer[vertexInput.instanceID].instanceIndex;
                 float4x4 trs = instanceBuffer[instID].trs;
-                int blockType = instanceBuffer[instID].available;
+                int blockType = instanceBuffer[instID].blockType;
 
                 int index = indexBuffer[vertexInput.vertexID + faceBuffer[vertexInput.instanceID].vertexIndex * 6];
 

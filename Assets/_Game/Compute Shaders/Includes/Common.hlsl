@@ -4,7 +4,7 @@ struct FaceData{
 };
 struct InstanceData{
     float4x4 trs;
-    int available;
+    int blockType;
 }; 
 struct EntityData{
     float3 movement;

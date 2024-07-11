@@ -21,7 +21,7 @@ Shader "Custom/Block face"
 
             struct InstanceData{
                 float4x4 trs;
-                int available;
+                int blockType;
             };
             struct FaceData{
                 uint instanceIndex;
@@ -66,7 +66,7 @@ Shader "Custom/Block face"
 
                 int instID = faceBuffer[attr.instanceID].instanceIndex;
                 float4x4 trs = instanceBuffer[instID].trs;
-                int blockType = instanceBuffer[instID].available;
+                int blockType = instanceBuffer[instID].blockType;
 
                 int index = indexBuffer[attr.vertexID + faceBuffer[attr.instanceID].vertexIndex * 6];
 

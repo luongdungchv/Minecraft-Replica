@@ -108,7 +108,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                 int xIndex = x + 128;
                 int zIndex = z + 128;
                 InstanceData inst = instanceBuffer[xIndex * maxHeight * size + zIndex * maxHeight + y];
-                if(inst.available == 0) continue;
+                if(inst.blockType == 0) continue;
 
                 Box block = (Box)0;
                 block.center = float3(x, y, z) + offset3D;
@@ -119,7 +119,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                 bool overlap = IsCubesOverlap(entityBox, block, normal);
                 if(normal.x == 0 && normal.y == 0 && normal.z == 0) continue;
                 if(dot(normal, moveDir) > 0) continue;
-                if(instanceBuffer[(xIndex + (int)normal.x) * maxHeight * size + (zIndex + (int)normal.z) * maxHeight + y + (int)normal.y].available != 0) continue;
+                if(instanceBuffer[(xIndex + (int)normal.x) * maxHeight * size + (zIndex + (int)normal.z) * maxHeight + y + (int)normal.y].blockType != 0) continue;
 
                 if(normal.x == 0 & normal.y == 1 && normal.z == 0){
                     ground = true;

@@ -16,7 +16,7 @@ void CSMain (int3 id : SV_DispatchThreadID)
 {
     uint inputIndex = id.x * maxHeight * size + id.y * maxHeight + id.z;
     InstanceData input = Input[inputIndex];
-    if(input.available == 0) return;
+    if(input.blockType == 0) return;
     for(uint i = 0; i < 6; i++){
         //float dotProd = dot(dirs[i], )
         // float3 pos = input.trs._m03_m13_m23;
@@ -37,7 +37,7 @@ void CSMain (int3 id : SV_DispatchThreadID)
             continue;
         }
         InstanceData ins = Input[adjID.x * maxHeight * size + adjID.y * maxHeight + adjID.z];
-        if(!ins.available){
+        if(!ins.blockType){
             FaceData face = (FaceData)0;
             face.instanceIndex = inputIndex;
             face.vertexIndex = i;
@@ -47,7 +47,7 @@ void CSMain (int3 id : SV_DispatchThreadID)
     }
     // int3 adjID = id + dirs[1];
     // InstanceData ins = Input[adjID.x * 20 * 256 + adjID.y * 20 + adjID.z];
-    // if(!ins.available){
+    // if(!ins.blockType){
     //     FaceData face = (FaceData)0;
     //     face.instanceIndex = inputIndex;
     //     face.vertexIndex = 4;

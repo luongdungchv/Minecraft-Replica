@@ -6,7 +6,7 @@
 
 struct InstanceData{
     float4x4 trs;
-    int available;
+    int blockType;
 };
 
 StructuredBuffer<InstanceData> input;
@@ -16,7 +16,7 @@ AppendStructuredBuffer<int> output;
 [numthreads(128,1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    int value = input[id.x].available;
+    int value = input[id.x].blockType;
     if(value == 0) return;
     int originalVal = 0;
     InterlockedAdd(checker[value], 1, originalVal);

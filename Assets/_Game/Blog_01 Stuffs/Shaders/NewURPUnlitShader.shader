@@ -1,4 +1,4 @@
-Shader "Custom/Test Block"
+Shader "Custom/Blocks"
 {
     Properties
     {
@@ -17,16 +17,10 @@ Shader "Custom/Test Block"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
-            struct InstanceData{
-                float4x4 trs;
-                int blockType;
-            };
-
             struct Attributes
             {
                 float4 positionOS : POSITION;
                 float2 uv : TEXCOORD0;
-                uint instanceID: SV_InstanceID;
             };
 
             struct Varyings
@@ -41,18 +35,11 @@ Shader "Custom/Test Block"
                 uniform float4 _MainTex_ST;
             CBUFFER_END
 
-            StructuredBuffer<InstanceData> instanceBuffer;
-
             Varyings vert (Attributes attr)
             {
                 Varyings output;
-                //output.positionCS = TransformObjectToHClip(attr.positionOS);
-                output.uv = attr.uv;
-
-                float3 positionWS = mul(instanceBuffer[attr.instanceID].trs, attr.positionOS).xyz;
-                output.positionCS = TransformObjectToHClip(positionWS);
-
-
+                output.positionCS = TransformObjectToHClip(attr.positionOS);
+                output.uv = TRANSFORM_TEX(attr.uv, _MainTex);
                 return output;
             }
 

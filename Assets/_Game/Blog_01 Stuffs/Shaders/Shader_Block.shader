@@ -1,4 +1,4 @@
-Shader "Custom/Test Block"
+Shader "Custom/Block"
 {
     Properties
     {
@@ -17,11 +17,6 @@ Shader "Custom/Test Block"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
-            struct InstanceData{
-                float4x4 trs;
-                int blockType;
-            };
-
             struct Attributes
             {
                 float4 positionOS : POSITION;
@@ -35,6 +30,11 @@ Shader "Custom/Test Block"
                 float4 positionCS : SV_POSITION;
             };
 
+            struct InstanceData{
+                float4x4 trs;
+                int blockType;
+            };
+
             CBUFFER_START(UnityPerMaterial)
                 TEXTURE2D(_MainTex);
                 SAMPLER(sampler_MainTex);
@@ -46,12 +46,11 @@ Shader "Custom/Test Block"
             Varyings vert (Attributes attr)
             {
                 Varyings output;
-                //output.positionCS = TransformObjectToHClip(attr.positionOS);
-                output.uv = attr.uv;
+                InstanceData instanceData = instanceBuffer[attr.instanceID];
+                float3 positionWS = mul(instanceData.trs, attr.positionOS);
 
-                float3 positionWS = mul(instanceBuffer[attr.instanceID].trs, attr.positionOS).xyz;
                 output.positionCS = TransformObjectToHClip(positionWS);
-
+                output.uv = attr.uv;
 
                 return output;
             }
