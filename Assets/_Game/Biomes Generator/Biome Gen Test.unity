@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028334, g: 0.22571328, b: 0.3069217, a: 1}
+  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -158,7 +158,7 @@ MonoBehaviour:
   initialBiomeCellSize: 4096
   biomeGenerationSize: 4
   baseMapGenShader: {fileID: 7200000, guid: 996525322c697e74bbf7cb22e4acf4ad, type: 3}
-  testOffset: {x: 3074, y: 0}
+  testOffset: {x: 0, y: 0}
   testSeed: 234
   testZoomLevel: 2
 --- !u!4 &351387246
