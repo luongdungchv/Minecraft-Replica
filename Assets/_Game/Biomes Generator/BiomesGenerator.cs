@@ -51,6 +51,24 @@ public class BiomesGenerator : MonoBehaviour
         this.baseMapGenShader.SetTexture(transferSecondTempKernel, "secondTempMap", secondTempMapTex);
         this.baseMapGenShader.Dispatch(transferSecondTempKernel, size, size, 1);
     }
+    
+    [Sirenix.OdinInspector.Button]
+    private void TestTransferTemp(){
+        this.baseMapGenShader.SetInts("offset", this.testOffset.x, this.testOffset.y);
+        this.baseMapGenShader.SetFloat("seed", this.testSeed);
+        this.baseMapGenShader.SetFloat("zoomLevel", this.testZoomLevel);
+        
+        var transferTempKernel = this.baseMapGenShader.FindKernel("TransferTemp");
+        var transferTempNoCutKernel = this.baseMapGenShader.FindKernel("TransferTempNoCut");
+        this.baseMapGenShader.SetTexture(transferTempKernel, "tempMap", tempMapTex);
+        this.baseMapGenShader.SetTexture(transferTempKernel, "BiomeMap", biomeMapTex);
+        var size = testZoomLevel >= 8 ? (int)Mathf.Pow(2, testZoomLevel - 8) : 1;
+        if(testZoomLevel < 8){
+            this.baseMapGenShader.Dispatch(transferTempKernel, 1, 1, 1);
+        }
+        else this.baseMapGenShader.Dispatch(transferTempNoCutKernel, size, size, 1);
+
+    }
 
     [Sirenix.OdinInspector.Button]
     private void TestGenBase()

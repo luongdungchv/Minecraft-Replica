@@ -4,7 +4,7 @@
 #pragma kernel GenerateZoomLevel
 #pragma kernel CopyIntMapToFloatMap
 #pragma kernel TransferTemp
-#pragma kernel GenerateFinalPhase
+//#pragma kernel GenerateFinalPhase
 #pragma kernel TransferTempNoCut
 #pragma kernel RemoveIsolated
 #pragma kernel RemoveOceans
@@ -27,7 +27,8 @@ float2 dirs[4];
 void GenerateBase(int3 id : SV_DispatchThreadID)
 {
     int2 baseOffset = offset / 4096;
-    float randomValue = rand2dTo1d(float2(baseOffset.x + seed, baseOffset.y + seed));
+    int2 cellPosWS = id.xy + baseOffset;
+    float randomValue = rand2dTo1d(float2(cellPosWS.x + seed, cellPosWS.y + seed));
     BiomeMap[id.xy] = step(0.85, randomValue);
     //float originalCellVal = BiomeMap[id.xy];
     //tempMap[id.xy] = step(0.6, randomValue);
@@ -36,9 +37,9 @@ void GenerateBase(int3 id : SV_DispatchThreadID)
 [numthreads(8, 8, 1)]
 void GenerateZoomLevel(int3 id: SV_DispatchThreadID){
     //if(id.x < 3 || id.y < 3 || id.x == 7 || id.y == 7) return;
-    int cellSize = 4096 / pow(2, zoomLevel - 1);
-    int2 baseOffset = offset / cellSize;
-    int2 parentOffset = offset / (4096 / pow(2, zoomLevel - 2));
+    // int cellSize = 4096 / pow(2, zoomLevel - 1);
+    // int2 baseOffset = offset / cellSize;
+    // int2 parentOffset = offset / (4096 / pow(2, zoomLevel - 2));
 
     float originalCellVal = BiomeMap[id.xy / 2];
     //tempMap[id.xy] = (int)(originalCellVal * 1000);
@@ -74,8 +75,10 @@ void AddIslands(int3 id: SV_DispatchThreadID){
         int2 adjID = id.xy + int2((int)dirs[i].x, (int)dirs[i].y);
         if(adjID.x < 0 || adjID.y < 0) continue;
         if(secondTempMap[adjID.xy] > 0) continue;
+        
+        int2 adjWS = adjID + baseOffset;
 
-        float randomVal = rand1dTo1d(seed + parentOffset.x * 4 + parentOffset.y + adjID.x * 2 + adjID.y + i);
+        float randomVal = rand2dTo1d(adjWS.x + seed / zoomLevel, adjWS.y + seed % zoomLevel);
         //InterlockedCompareStore(tempMapInt[adjID.xy], 0, step(0.8, randomVal) * 1000);
         //tempMapInt[adjID.xy] = step(0.8, randomVal) * 1000;
         if(tempMap[adjID.xy] == 0){
@@ -105,6 +108,7 @@ void TransferTemp(int3 id: SV_DispatchThreadID){
     int2 baseOffset = offset / cellSize;
     int2 parentOffset = offset / (4096 / pow(2, zoomLevel - 2));
     int2 cellIndex = baseOffset - parentOffset * 2;
+    int2 cellPosWS = id.xy + baseOffset;
     
     if(id.x < 2 + cellIndex.x || id.y < 2 + cellIndex.y || id.x >= 6 + cellIndex.x || id.y >= 6 + cellIndex.y) return;
     
@@ -118,34 +122,39 @@ void TransferTemp(int3 id: SV_DispatchThreadID){
         //     if(adjID.x < 0 || adjID.y < 0 || adjID.x >= 8 || adjID.y >= 8) continue;
         //     if(tempMap[adjID.xy] == 0) prob += 0.1;
         // }
-        float random = rand1dTo1d(seed + offset.x * 4 + offset.y + id.x * 4 + id.y + zoomLevel);
-        value = step(0.1, random);
+        float sqrtSeed = sqrt(seed);
+        float random = rand2dTo1d(float2((float)cellPosWS.x + sqrtSeed, (float)cellPosWS.y - sqrtSeed / 2));
+        //value = step(0.1, random);
     }
     else{   
-        float random = rand1dTo1d(seed + offset.x * 3 + offset.y + id.x * 5 + id.y + zoomLevel);
+        float random = rand2dTo1d(float2((float)cellPosWS.x / sqrt(seed), (float)cellPosWS.y + sin(seed) * 5));
         //float random = rand2dTo1d(float2(seed + id.x, id.y + zoomLevel));
-        value = step(0.93, random);
+        //value = step(0.93, random);
     }
     BiomeMap[biomeID.xy] = value; 
 }
 
-[numthreads(8, 8, 1)]
-void GenerateFinalPhase(int3 id: SV_DispatchThreadID){
-    float originalCellVal = BiomeMap[id.xy / 2];
+// [numthreads(8, 8, 1)]
+// void GenerateFinalPhase(int3 id: SV_DispatchThreadID){
+//     float originalCellVal = BiomeMap[id.xy / 2];
+    
+//     int cellSize = 4096 / pow(2, zoomLevel - 1);
+//     int2 baseOffset = offset / cellSize;
+//     int2 cellPosWS = id.xy + 
 
-    tempMap[id.xy] = originalCellVal;
-    if(originalCellVal == 0) return;
+//     tempMap[id.xy] = originalCellVal;
+//     if(originalCellVal == 0) return;
 
-    for(int i = 0; i < 4; i++){
-        int2 adjID = id.xy + int2((int)dirs[i].x, (int)dirs[i].y);
-        if(adjID.x < 0 || adjID.y < 0) continue;
-        if(BiomeMap[adjID.xy / 2] > 0) continue;
+//     for(int i = 0; i < 4; i++){
+//         int2 adjID = id.xy + int2((int)dirs[i].x, (int)dirs[i].y);
+//         if(adjID.x < 0 || adjID.y < 0) continue;
+//         if(BiomeMap[adjID.xy / 2] > 0) continue;
 
-        float randomVal = rand1dTo1d(seed + zoomLevel * 9 + offset.x * 4 + offset.y + adjID.x * 2 + adjID.y + i);
-        if(tempMap[adjID.xy] == 0)
-            tempMap[adjID.xy] = step(0.8, randomVal);
-    }
-}
+//         float randomVal = rand1dTo1d(seed + zoomLevel * 9 + offset.x * 4 + offset.y + adjID.x * 2 + adjID.y + i);
+//         if(tempMap[adjID.xy] == 0)
+//             tempMap[adjID.xy] = step(0.8, randomVal);
+//     }
+// }
 
 [numthreads(8, 8, 1)]
 void TransferTempNoCut(int3 id: SV_DispatchThreadID){
@@ -153,6 +162,7 @@ void TransferTempNoCut(int3 id: SV_DispatchThreadID){
     if(id.x >= size || id.y >= size) return;
     int2 biomeID = id.xy;
     float value = tempMap[id.xy];
+    int2 cellPosWS = id.xy + offset / (4096 / pow(2, zoomLevel - 1));
     if(value > 0){
         float prob = 0;
         for(int i = 0; i < 4; i++){
@@ -161,7 +171,8 @@ void TransferTempNoCut(int3 id: SV_DispatchThreadID){
             if(tempMap[adjID.xy] == 0) prob += 0.11;
         }
         if(prob > 0.4) prob = 1.01;
-        float random = rand1dTo1d(seed + offset.x * 4 + offset.y + id.x * 4 + id.y + zoomLevel);
+        float sqrtSeed = sqrt(seed);
+        float random = rand2dTo1d(float2((float)cellPosWS.x + sqrtSeed, (float)cellPosWS.y - sqrtSeed / 2));
         value = step(prob, random);
         
     }
